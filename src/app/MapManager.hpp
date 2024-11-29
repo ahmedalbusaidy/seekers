@@ -4,8 +4,13 @@
 #include "systems/ProceduralGenerationSystem.hpp"
 #include "systems/OpenWorldMapCreatorSystem.hpp"
 
+// Forward declare SaveLoadSystem
+// class SaveLoadSystem;
+
 class MapManager {
 public:
+    friend class SaveLoadSystem;
+
     static MapManager& get_instance() {
         static MapManager instance;
         return instance;
