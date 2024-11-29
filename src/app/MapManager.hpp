@@ -4,12 +4,12 @@
 #include "systems/ProceduralGenerationSystem.hpp"
 #include "systems/OpenWorldMapCreatorSystem.hpp"
 
-// Forward declare SaveLoadSystem
-// class SaveLoadSystem;
+// Forward declare MapManagerSerializer
+class MapManagerSerializer;
 
 class MapManager {
 public:
-    friend class SaveLoadSystem;
+    friend class MapManagerSerializer;  // Give access to MapManagerSerializer
 
     static MapManager& get_instance() {
         static MapManager instance;
