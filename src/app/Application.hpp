@@ -49,6 +49,7 @@ class Application {
 
     StaticModel* m_spooky_tree;
     StaticModel* m_crystal;
+    StaticModel* m_statue;
     StaticModel* m_light_orb;
     StaticModel* m_campfire;
     StaticModel* m_dungeon_entrance;
@@ -171,6 +172,15 @@ public:
         m_crystal->set_pre_transform(
             Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
             Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
+        );
+
+        m_statue = new StaticModel("models/Statue.obj", m_wall_shader);
+        m_statue->set_pre_transform(
+            Transform::create_model_matrix(
+                {0, 0, 0},
+                {PI / 2.0f, 0, 0},
+                glm::vec3(0.03f)
+            )
         );
 
         m_light_orb = new StaticModel("models/Orb_low.obj", m_wall_shader);
@@ -1338,15 +1348,19 @@ private:
                 m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
                 m_dungeon_entrance->set_rotation_z(motion.angle);
                 m_crystal->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+                m_statue->set_position(glm::vec3(motion.position, 0.0f));
+                m_statue->set_rotation_z(motion.angle);
+                m_statue->draw();
             }
-            
         }
 
         // int x = 0;
         // for (auto ewqrqf : {1,2,3,4,5,6}) {
-        //     m_crystal->set_position_x(x);
-        //     m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
-        //     m_crystal->draw();
+        //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+        //     m_statue->set_position_x(x);
+        //     m_statue->draw();
         //     x += 50;
         // }
         // change colour back lol
