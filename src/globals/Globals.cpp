@@ -26,4 +26,5 @@ namespace Globals {
     void* ptr_window = nullptr;
     bool show_loading_screen = false;
     bool in_pause = true;
+    bool after_pause = false;
 }
