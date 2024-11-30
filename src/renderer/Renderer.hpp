@@ -140,6 +140,10 @@ public:
         glfwGetFramebufferSize(m_window, &window_width, &window_height);
         m_window_width = window_width;
         m_window_height = window_height;
+#if __APPLE__
+        m_window_width /= 2.0f;
+        m_window_height /= 2.0f;
+#endif
     }
 
     const void begin_draw() const {
