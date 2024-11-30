@@ -120,14 +120,14 @@ public:
         // m_loading_tex = new Texture2D("menu/seekers_background.JPG");
         m_loading_tex = new Texture2D("menu/loading.JPG");
         // m_home_tex =  new Texture2D("menu/home.jpg");
-        m_menu_textures["play"] = new Texture2D("menu/play.jpg");
-        m_menu_textures["hover_play"] = new Texture2D("menu/hover_play.jpg");
-        m_menu_textures["load"] = new Texture2D("menu/load.jpg");
-        m_menu_textures["hover_load"] = new Texture2D("menu/hover_load.jpg");
-        m_menu_textures["quit"] = new Texture2D("menu/quit.jpg");
-        m_menu_textures["hover_quit"] = new Texture2D("menu/hover_quit.jpg");
-        m_menu_textures["resume"] = new Texture2D("menu/resume.jpg");
-        m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.jpg");
+        m_menu_textures["newgame"] = new Texture2D("menu/newgame.png");
+        m_menu_textures["hover_newgame"] = new Texture2D("menu/hover_newgame.png");
+        m_menu_textures["load"] = new Texture2D("menu/load.png");
+        m_menu_textures["hover_load"] = new Texture2D("menu/hover_load.png");
+        m_menu_textures["quit"] = new Texture2D("menu/quit.png");
+        m_menu_textures["hover_quit"] = new Texture2D("menu/hover_quit.png");
+        m_menu_textures["resume"] = new Texture2D("menu/resume.png");
+        m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.png");
         
         m_wall_shader = new Shader("StaticBlinnPhong");
         m_floor_shader = new Shader("StaticBlinnPhong");
@@ -1733,12 +1733,15 @@ private:
         }
     }
 
+    float _button_height = 0.15f;
+    float _button_spacing = 1.5f;
+
     void _add_resume_to_menu() {
         main_menu->add_element(
             std::make_unique<Button>(
                 &m_square_mesh,
-                glm::vec2(0, 0.1f * 1.5f * 2.0f),
-                glm::vec2(0.25f, 0.1f),
+                glm::vec2(0, _button_height * _button_spacing * 1.0f),
+                glm::vec2(0.25f, _button_height),
                 "",
                 m_menu_textures["resume"],
                 m_menu_textures["hover_resume"],
@@ -1748,23 +1751,23 @@ private:
     }
 
     void _init_menu() {
-        main_menu = std::make_unique<Menu>("menu/home.jpg");
+        main_menu = std::make_unique<Menu>("menu/home.png");
         main_menu->add_element(
             std::make_unique<Button>(
                 &m_square_mesh,
-                glm::vec2(0, 0.1f * 1.5f * 1.0f),
-                glm::vec2(0.25f, 0.1f),
+                glm::vec2(0, _button_height * _button_spacing * 0.0f),
+                glm::vec2(0.25f, _button_height),
                 "",
-                m_menu_textures["play"],
-                m_menu_textures["hover_play"],
+                m_menu_textures["newgame"],
+                m_menu_textures["hover_newgame"],
                 std::bind(&Application::unpause, this)
             )
         );
         main_menu->add_element(
             std::make_unique<Button>(
                 &m_square_mesh,
-                glm::vec2(0, 0.1f * 1.5f * 0.0f),
-                glm::vec2(0.25f, 0.1f),
+                glm::vec2(0, _button_height * _button_spacing * -1.0f),
+                glm::vec2(0.25f, _button_height),
                 "",
                 m_menu_textures["load"],
                 m_menu_textures["hover_load"],
@@ -1774,8 +1777,8 @@ private:
         main_menu->add_element(
             std::make_unique<Button>(
                 &m_square_mesh,
-                glm::vec2(0, 0.1f * 1.5f * -1.0f),
-                glm::vec2(0.25f, 0.1f),
+                glm::vec2(0, _button_height * _button_spacing * -2.0f),
+                glm::vec2(0.25f, _button_height),
                 "",
                 m_menu_textures["quit"],
                 m_menu_textures["hover_quit"],
