@@ -36,8 +36,7 @@ public:
     bool is_hovering() const { return is_hovered; }
 };
 
-// Button Class
-class Button : public UIElement {
+class MyButton : public UIElement {
 private:
     std::string text;
     std::function<void()> callback;
@@ -45,7 +44,7 @@ private:
     Texture2D* hover_texture;
 
 public:
-    Button(Mesh* square_mesh, const glm::vec2& pos, const glm::vec2& sz, 
+    MyButton(Mesh* square_mesh, const glm::vec2& pos, const glm::vec2& sz,
            const std::string& btn_text, 
            Texture2D* normal, Texture2D* hover,
            const std::function<void()>& on_click) 
