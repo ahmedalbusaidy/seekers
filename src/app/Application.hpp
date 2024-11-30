@@ -396,10 +396,12 @@ public:
             time_of_last_frame = float(timer.GetTime());
 
             if (Globals::in_pause) {// testing menustd::unique_ptr<
+                m_renderer->unlock_cursor();
                 menu_update();
                 main_menu->draw(m_renderer, m_hud_health_shader, m_square_mesh);
                 continue;
             }
+            m_renderer->lock_cursor();
 
             world.step(delta_time * 0.001f);
             Registry& reg = MapManager::get_instance().get_active_registry();
