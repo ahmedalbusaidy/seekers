@@ -23,6 +23,15 @@ namespace InputManager {
             instance.stop_footstep();
         }
 
+        if (Globals::in_pause) {
+            registry.input_state.a_down = false;
+            registry.input_state.w_down = false;
+            registry.input_state.d_down = false;
+            registry.input_state.s_down = false;
+            Globals::after_pause = true;
+            return;
+        }
+
         if (Globals::is_getting_up) return;
 
         if (action == GLFW_PRESS && key == GLFW_KEY_F) {
@@ -166,7 +175,12 @@ namespace InputManager {
     inline void on_mouse_move(GLFWwindow* window, double x, double y) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
-        if (Globals::is_getting_up || registry.in_rests.has(registry.player)) return;
+        if (Globals::is_getting_up || registry.in_rests.has(registry.player) || Globals::in_pause) return;
+
+        if (Globals::after_pause) {
+            glfwSetCursorPos(window, registry.input_state.mouse_pos.x, WINDOW_HEIGHT - registry.input_state.mouse_pos.y);
+            Globals::after_pause = false;
+        }
 
         if (Globals::is_3d_mode) {
             if (!registry.death_cooldowns.has(registry.player)) {

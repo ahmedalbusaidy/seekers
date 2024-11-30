@@ -182,7 +182,8 @@ namespace GameplaySystem {
         Registry& registry = MapManager::get_instance().get_active_registry();
         AudioSystem& audio = AudioSystem::get_instance();
 
-        if (registry.in_dodges.has(e) || registry.locomotion_stats.get(e).energy <= 0) return;
+        if (registry.in_dodges.has(e) || registry.locomotion_stats.get(e).energy <= 0 ||
+            registry.death_cooldowns.has(e) || registry.stagger_cooldowns.has(e)) return;
 
         Motion& motion = registry.motions.get(e);
 
