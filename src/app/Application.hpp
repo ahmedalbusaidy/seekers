@@ -1740,7 +1740,7 @@ private:
 
     void _add_resume_to_menu() {
         main_menu->add_element(
-            std::make_unique<Button>(
+            std::make_unique<MyButton>(
                 &m_square_mesh,
                 glm::vec2(0, _button_height * _button_spacing * 1.0f),
                 glm::vec2(0.25f, _button_height),
@@ -1755,7 +1755,7 @@ private:
     void _init_menu() {
         main_menu = std::make_unique<Menu>("menu/home.png");
         main_menu->add_element(
-            std::make_unique<Button>(
+            std::make_unique<MyButton>(
                 &m_square_mesh,
                 glm::vec2(0, _button_height * _button_spacing * 0.0f),
                 glm::vec2(0.25f, _button_height),
@@ -1766,7 +1766,7 @@ private:
             )
         );
         main_menu->add_element(
-            std::make_unique<Button>(
+            std::make_unique<MyButton>(
                 &m_square_mesh,
                 glm::vec2(0, _button_height * _button_spacing * -1.0f),
                 glm::vec2(0.25f, _button_height),
@@ -1777,7 +1777,7 @@ private:
             )
         );
         main_menu->add_element(
-            std::make_unique<Button>(
+            std::make_unique<MyButton>(
                 &m_square_mesh,
                 glm::vec2(0, _button_height * _button_spacing * -2.0f),
                 glm::vec2(0.25f, _button_height),
