@@ -8,9 +8,9 @@
 
 namespace Globals {
     float cameraRotationSpeed = 2.5f;
-    float dodgeMoveMag = 5.0f;
+    float dodgeMoveMag = 10.0f;
     bool is_3d_mode = true;
-    float dodgeDuration = 0.3f;
+    float dodgeDuration = 0.8f;
     Timer timer = Timer();
     float ai_distance_epsilon = 0.2f;
     float update_distance = 70.0f;

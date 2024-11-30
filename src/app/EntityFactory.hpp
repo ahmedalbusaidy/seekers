@@ -514,31 +514,24 @@ namespace EntityFactory {
     inline Entity create_level_up_orb(Registry& registry, glm::vec2 position, int level) {
         // TODO
         auto entity = Entity();
-        //
-        // auto& motion = registry.motions.emplace(entity);
-        // motion.position = position;
-        // motion.scale = glm::vec2(1.5f);
-        //
-        // auto& team = registry.teams.emplace(entity);
-        // team.team_id = TEAM_ID::NEUTRAL;
-        //
-        // auto& obj = registry.static_objects.emplace(entity);
-        // obj.type = STATIC_OBJECT_TYPE::BONFIRE;
-        //
-        // // Use circle collider for tree
-        // registry.collision_bounds.emplace(entity,
-        //     CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
-        //
-        // auto& interact = registry.interactables.emplace(entity);
-        // interact.entity = entity;
-        // interact.range = 5.0f;
-        // interact.type = INTERACTABLE_TYPE::BONFIRE;
-        //
-        // LightSource& light_source = registry.light_sources.emplace(entity);
-        // light_source.pos = glm::vec3(position, 1.0f);
-        // light_source.brightness = 10.0f;
-        // light_source.colour = glm::vec3(252.0f/255.0f, 116.0f/255.0f, 5.0f/255.0f);
-        //
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(1.5f);
+
+        auto& obj = registry.static_objects.emplace(entity);
+        obj.type = STATIC_OBJECT_TYPE::LEVEL_UP_ORB;
+
+        auto& interact = registry.interactables.emplace(entity);
+        interact.entity = entity;
+        interact.range = 5.0f;
+        interact.type = INTERACTABLE_TYPE::ITEM_PICKUP;
+
+        LightSource& light_source = registry.light_sources.emplace(entity);
+        light_source.pos = glm::vec3(position, 0.2f);
+        light_source.brightness = 4.0f;
+        light_source.colour = glm::vec3(1.0f, 1.0f, 1.0f);
+
         return entity;
     }
 };
