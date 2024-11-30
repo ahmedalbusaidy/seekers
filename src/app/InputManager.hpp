@@ -17,6 +17,12 @@ namespace InputManager {
         Registry& registry = MapManager::get_instance().get_active_registry();
         Motion& player_motion = registry.motions.get(registry.player);
 
+        if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+            Globals::in_pause = !Globals::in_pause;
+            auto& instance = AudioSystem::get_instance();
+            instance.stop_footstep();
+        }
+
         if (Globals::is_getting_up) return;
 
         if (action == GLFW_PRESS && key == GLFW_KEY_F) {
@@ -140,7 +146,7 @@ namespace InputManager {
     inline void on_mouse_button_pressed(GLFWwindow* window, int button, int action, int mods) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
-        if (Globals::is_getting_up || registry.in_rests.has(registry.player)) return;
+        if (Globals::is_getting_up || registry.in_rests.has(registry.player) || Globals::in_pause) return;
 
         Attacker& player_attacker = registry.attackers.get(registry.player);
         Weapon& weapon_stats = registry.weapons.get(player_attacker.weapon);
