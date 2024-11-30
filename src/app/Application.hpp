@@ -1332,17 +1332,23 @@ private:
                 m_dungeon_entrance->set_rotation_z(motion.angle);
                 m_dungeon_entrance->draw();
                 // change colour back lol
-                m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
+                m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
+                m_dungeon_entrance->set_rotation_z(motion.angle);
+                m_crystal->draw();
             }
+            
         }
 
-        int x = 0;
-        for (auto ewqrqf : {1,2,3,4,5,6}) {
-            m_crystal->set_position_x(x);
-            m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
-            m_crystal->draw();
-            x += 50;
-        }
+        // int x = 0;
+        // for (auto ewqrqf : {1,2,3,4,5,6}) {
+        //     m_crystal->set_position_x(x);
+        //     m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
+        //     m_crystal->draw();
+        //     x += 50;
+        // }
         // change colour back lol
         m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
     }
@@ -1362,12 +1368,13 @@ private:
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
-                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+                m_wall_shader->set_uniform_3f("u_object_color", { 153.0f/255.0f, 102.0f/255.0f, 151.0f/255.0f });
                 m_arrow->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
                 m_banana->set_rotation_z(motion.angle);
                 m_banana->set_rotation_z(motion.angle);
+                m_wall_shader->set_uniform_3f("u_object_color", { 109.0f/255.0f, 170.0f/255.0f, 255.0f/255.0f });
                 m_banana->draw();
             }
         }
@@ -1589,19 +1596,30 @@ private:
         float i = 0;
         for (const auto& estus_shit : reg.inventory.estus) {
             m_hud_health_shader->set_uniform_mat4f("u_model",
-                Transform::create_model_matrix(
-                    {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
-                    {0, 0, 0},
-                    {0.125f, 0.25f, 1}
+                // Transform::create_model_matrix(
+                //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
+                //     {0, 0, 0},
+                //     {0.125f, 0.25f, 1}
+                // )
+                Transform::create_translation_matrix(
+                    {-1 + i++ * 0.005f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
+                ) * 
+                Transform::create_scaling_matrix(
+                    {1.5f*0.125f, 1.5*0.25f, 1}
+                ) *
+                Transform::create_rotation_matrix(
+                    {0, 0, PI / 16.0f + (i+1) * -PI / 32.0f}
                 )
             );
             m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
+        FontStuff& font_monkey = FontStuff::get_instance();
+        font_monkey.render_text(std::to_string(int(i)), m_renderer->get_window_width() / 12.0f, m_renderer->get_window_height() / 9.0f, float(m_renderer->get_window_width()) / (1920.f), {1,1,1});
+        
 
         _draw_tutorial();
 
         if (reg.near_interactable.is_active) {
-            FontStuff& font_monkey = FontStuff::get_instance();
             font_monkey.render_text(reg.near_interactable.message.c_str(), m_renderer->get_window_width() / 2.0f, m_renderer->get_window_height() / 2.0f, float(m_renderer->get_window_width()) / 1920.f, {0.95f, 0, 0});
         }
 
