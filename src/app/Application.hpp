@@ -48,6 +48,7 @@ class Application {
     Shader* m_wall_shader;
 
     StaticModel* m_spooky_tree;
+    StaticModel* m_crystal;
     StaticModel* m_light_orb;
     StaticModel* m_campfire;
     StaticModel* m_dungeon_entrance;
@@ -164,6 +165,12 @@ public:
         m_spooky_tree->mesh_list.back()->set_texture(m_spooky_tree->texture_list.back());
         m_spooky_tree->set_pre_transform(
             Transform::create_scaling_matrix(glm::vec3(0.15f, 0.15f, 0.35f))
+        );
+
+        m_crystal = new StaticModel("models/Crystal.dae", m_wall_shader);
+        m_crystal->set_pre_transform(
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
         );
 
         m_light_orb = new StaticModel("models/Orb_low.obj", m_wall_shader);
@@ -629,6 +636,14 @@ public:
             for (auto& id : m_to_be_updated_and_drawn) {
                 auto kv = m_models.find(id);
                 if (kv == m_models.end() || kv->second == nullptr) { continue; }
+                if (reg.enemies.has(id)) {
+                    auto& enm = reg.enemies.get(id);
+                    if (enm.type == ENEMY_TYPE::WARRIOR) {
+                        m_wall_shader->set_uniform_3f("u_object_color", { 170.0f / 255.0f, 169.0f / 255.0f, 173.0f/255.0f });
+                    } else if (enm.type == ENEMY_TYPE::ARCHER) {
+                        m_wall_shader->set_uniform_3f("u_object_color", { 150.0f / 255.0f, 111.0f / 255.0f, 151.0f/255.0f });
+                    }
+                }
                 kv->second->draw();
             }
 
@@ -1306,12 +1321,11 @@ private:
                 m_campfire->draw();
             } else if (static_object.type == STATIC_OBJECT_TYPE::PORTAL) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-                m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
                 m_portal->set_position(glm::vec3(motion.position, 0.0f));
                 m_portal->set_rotation_z(motion.angle);
                 m_portal->draw();
-                // change colour back lol
-                m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+                
+                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
             } else if (static_object.type == STATIC_OBJECT_TYPE::DUNGEON_ENTRANCE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 86.0f/ 255.0f, 86.0f / 255.0f, 86.0f / 255.0f });
                 m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
@@ -1322,12 +1336,15 @@ private:
             }
         }
 
-        // int x = 0;
-        // for (auto& rock : m_rocks) {
-        //     rock->set_position_x(x);
-        //     rock->draw();
-        //     x += 50;
-        // }
+        int x = 0;
+        for (auto ewqrqf : {1,2,3,4,5,6}) {
+            m_crystal->set_position_x(x);
+            m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
+            m_crystal->draw();
+            x += 50;
+        }
+        // change colour back lol
+        m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
     }
 
     void _draw_projectiles() {
@@ -1345,6 +1362,7 @@ private:
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
+                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
                 m_arrow->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
@@ -1588,9 +1606,9 @@ private:
         }
 
         glm::vec3 fps_colour;
-        if (m_frame_rate >= 50.0f) {
+        if (m_frame_rate >= 45.0f) {
             fps_colour = {0, 1, 0};
-        } else if (m_frame_rate >= 30.0f) {
+        } else if (m_frame_rate >= 24.0f) {
             fps_colour = {1, 1, 0};
         } else {
             fps_colour = {1, 0, 0};
