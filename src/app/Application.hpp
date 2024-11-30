@@ -50,6 +50,7 @@ class Application {
     StaticModel* m_spooky_tree;
     StaticModel* m_crystal;
     StaticModel* m_statue;
+    StaticModel* m_bmw;
     StaticModel* m_light_orb;
     StaticModel* m_campfire;
     StaticModel* m_dungeon_entrance;
@@ -173,6 +174,15 @@ public:
             Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
             Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
         );
+
+        // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);
+        // m_bmw->set_pre_transform(
+        //     Transform::create_model_matrix(
+        //         {0, 0, 0},
+        //         {PI / 2.0f, 0, 0},
+        //         glm::vec3(3.0f)
+        //     )
+        // );
 
         m_statue = new StaticModel("models/Statue.obj", m_wall_shader);
         m_statue->set_pre_transform(
@@ -1359,8 +1369,8 @@ private:
         // int x = 0;
         // for (auto ewqrqf : {1,2,3,4,5,6}) {
         //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-        //     m_statue->set_position_x(x);
-        //     m_statue->draw();
+        //     m_bmw->set_position_x(x);
+        //     m_bmw->draw();
         //     x += 50;
         // }
         // change colour back lol
