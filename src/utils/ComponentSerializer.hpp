@@ -532,24 +532,37 @@ namespace ComponentSerializer {
 
     // Inventory serialization
     inline json serialize_inventory(const Inventory& inventory) {
-        std::vector<unsigned int> estus_ids, weapon_ids;
-        for (const auto& e : inventory.estus) estus_ids.push_back(e.get_id());
-        for (const auto& w : inventory.weapons) weapon_ids.push_back(w.get_id());
-        
-        return {
-            {"estus_ids", estus_ids},
-            {"weapon_ids", weapon_ids},
-            {"estus_capacity", inventory.estus_capacity}
+        json data = {
+            {"estus_capacity", inventory.estus_capacity},
+            {"estus_heal_amount", inventory.estus_heal_amount}
         };
+        
+        std::vector<unsigned int> estus_ids;
+        std::vector<unsigned int> weapon_ids;
+        
+        for (const auto& estus : inventory.estus) {
+            estus_ids.push_back(estus.get_id());
+        }
+        for (const auto& weapon : inventory.weapons) {
+            weapon_ids.push_back(weapon.get_id());
+        }
+        
+        data["estus_ids"] = estus_ids;
+        data["weapon_ids"] = weapon_ids;
+        
+        return data;
     }
 
     inline void deserialize_inventory(Inventory& inventory, const json& j, 
         const std::vector<std::pair<unsigned int, Entity>>& entity_map) {
-        if (!j.contains("estus_ids") || !j.contains("weapon_ids") || !j.contains("capacity")) {
+        if (!j.contains("estus_capacity") || !j.contains("estus_heal_amount") ||
+            !j.contains("estus_ids") || !j.contains("weapon_ids")) {
             throw SerializationError("Missing fields in inventory data");
         }
         
         inventory.estus_capacity = j["estus_capacity"];
+        inventory.estus_heal_amount = j["estus_heal_amount"];
+        
         inventory.estus.clear();
         inventory.weapons.clear();
         
@@ -630,5 +643,106 @@ namespace ComponentSerializer {
                 locked.target = it->second;
             }
         }
+    }
+
+    // BossAI serialization
+    inline json serialize_boss_ai(const BossAI& boss) {
+        json j = {
+            {"state", static_cast<int>(boss.state)},
+            {"cooldown_delay_counter", boss.cooldown_delay_counter},
+            {"dodge_ratio", boss.dodge_ratio},
+            {"combo_index", boss.combo_index},
+            {"attack_index", boss.attack_index},
+            {"attack_delay_counter", boss.attack_delay_counter},
+            {"attack_range", boss.attack_range}
+        };
+
+        // Serialize combos
+        json combos_array = json::array();
+        for (const auto& combo : boss.combos) {
+            json combo_obj = {
+                {"attacks", json::array()},
+                {"delays", combo.delays}
+            };
+            for (const auto& attack : combo.attacks) {
+                combo_obj["attacks"].push_back(static_cast<int>(attack));
+            }
+            combos_array.push_back(combo_obj);
+        }
+        j["combos"] = combos_array;
+        j["q"] = boss.q;
+        j["k"] = boss.k;
+
+        return j;
+    }
+
+    inline void deserialize_boss_ai(BossAI& boss, const json& j) {
+        boss.state = static_cast<BOSS_STATE>(j["state"]);
+        boss.cooldown_delay_counter = j["cooldown_delay_counter"];
+        boss.dodge_ratio = j["dodge_ratio"];
+        boss.combo_index = j["combo_index"];
+        boss.attack_index = j["attack_index"];
+        boss.attack_delay_counter = j["attack_delay_counter"];
+        boss.attack_range = j["attack_range"];
+        
+        boss.combos.clear();
+        for (const auto& combo_data : j["combos"]) {
+            AttackCombo combo;
+            for (const auto& attack : combo_data["attacks"]) {
+                combo.attacks.push_back(static_cast<BOSS_ATTACK_TYPE>(attack));
+            }
+            combo.delays = combo_data["delays"].get<std::vector<float>>();
+            boss.combos.push_back(combo);
+        }
+        
+        boss.q = j["q"].get<std::vector<float>>();
+        boss.k = j["k"].get<std::vector<unsigned int>>();
+    }
+
+    // AttackBuildup serialization
+    inline json serialize_attack_buildup(const AttackBuildup& buildup) {
+        return {
+            {"timer", buildup.timer},
+            {"from_boss", buildup.from_boss},
+            {"attack_type", static_cast<int>(buildup.attack_type)}
+        };
+    }
+
+    inline void deserialize_attack_buildup(AttackBuildup& buildup, const json& j) {
+        buildup.timer = j["timer"];
+        buildup.from_boss = j["from_boss"];
+        buildup.attack_type = static_cast<BOSS_ATTACK_TYPE>(j["attack_type"]);
+    }
+
+    // LevelUp serialization
+    inline json serialize_level_up(const LevelUp& level_up) {
+        return {
+            {"health", level_up.health},
+            {"energy", level_up.energy},
+            {"poise", level_up.poise},
+            {"defense", level_up.defense},
+            {"power", level_up.power},
+            {"agility", level_up.agility},
+            {"estus_num", level_up.estus_num},
+            {"estus_heal", level_up.estus_heal}
+        };
+    }
+
+    inline void deserialize_level_up(LevelUp& level_up, const json& j) {
+        if (!j.contains("health") || !j.contains("energy") || 
+            !j.contains("poise") || !j.contains("defense") || 
+            !j.contains("power") || !j.contains("agility") || 
+            !j.contains("estus_num") || !j.contains("estus_heal")) {
+            throw SerializationError("Missing required fields in level up data");
+        }
+        
+        level_up.health = j["health"];
+        level_up.energy = j["energy"];
+        level_up.poise = j["poise"];
+        level_up.defense = j["defense"];
+        level_up.power = j["power"];
+        level_up.agility = j["agility"];
+        level_up.estus_num = j["estus_num"];
+        level_up.estus_heal = j["estus_heal"];
     }
 }
