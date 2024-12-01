@@ -526,22 +526,46 @@ namespace EntityFactory {
         interact.range = 5.0f;
         interact.type = INTERACTABLE_TYPE::ITEM_PICKUP;
 
-        // TODO: randomize based on level and max possible stats
-        auto& level_up = registry.level_ups.emplace(entity);
-        level_up.health = 50.0f;
-        level_up.energy = 50.0f;
-        level_up.poise = 50.0f;
-        level_up.defense = 10.0f;
-        level_up.power = 10.0f;
-        level_up.agility = 10.0f;
-        level_up.estus_num = 1;
-        level_up.estus_heal = 10.0f;
+        // randomize level up amount
+        float total_points = 0.0f;
+        if (level == 0) {
+            total_points = 100.0f;
+        } else if (level == 1) {
+            total_points = 200.0f;
+        } else if (level == 2) {
+            total_points = 300.0f;
+        }
+        std::mt19937 gen(std::random_device{}());
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        std::array<float, 7> floats;
+        for (auto& f : floats) f = dist(gen);
+        std::sort(floats.begin(), floats.end());
+        float health_points = floats.at(0) * total_points;
+        float energy_points = (floats.at(1) - floats.at(0)) * total_points / 3.0f;
+        float poise_points = (floats.at(2) - floats.at(1)) * total_points / 6.0f;
+        float defense_points = (floats.at(3) - floats.at(2)) * total_points / 8.0f;
+        float power_points = (floats.at(4) - floats.at(3)) * total_points / 8.0f;
+        float agility_points = (floats.at(5) - floats.at(4)) * total_points / 8.0f;
+        int estus_num = int((floats.at(6) - floats.at(5)) * total_points / 70.0f);
+        float estus_heal = (1.0f - floats.at(6)) * total_points / 2.0f;
 
-        // TODO: set the light color depending on stats
+        auto& level_up = registry.level_ups.emplace(entity);
+        level_up.health = health_points;
+        level_up.energy = energy_points;
+        level_up.poise = poise_points;
+        level_up.defense = defense_points;
+        level_up.power = power_points;
+        level_up.agility = agility_points;
+        level_up.estus_num = estus_num;
+        level_up.estus_heal = estus_heal;
+
         LightSource& light_source = registry.light_sources.emplace(entity);
-        light_source.pos = glm::vec3(position, 0.2f);
-        light_source.brightness = 4.0f;
-        light_source.colour = glm::vec3(0.0f, 0.0f, 1.0f);
+        light_source.pos = glm::vec3(position, 3.0f);
+        light_source.brightness = 4.0f * total_points / 300.0f;
+        float r = floats.at(0) + (floats.at(4) - floats.at(2));
+        float g = (floats.at(2) - floats.at(0)) + (floats.at(5) - floats.at(4));
+        float b = 1.0f - floats.at(5);
+        light_source.colour = glm::vec3(r, g, b);
 
         return entity;
     }
