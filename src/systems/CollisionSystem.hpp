@@ -437,6 +437,7 @@ namespace CollisionSystem {
         if (loco_stats.poise <= 0 && !registry.stagger_cooldowns.has(loco)) {
             registry.stagger_cooldowns.emplace(loco, projectile.stagger_duration);
             loco_stats.poise = loco_stats.max_poise;
+            if (loco == registry.player) registry.estus_cooldowns.remove(loco);
         }
 
         // Remove projectile after hit
@@ -453,6 +454,7 @@ namespace CollisionSystem {
             // Remove the dead entity
             // registry.remove_all_components_of(loco);
             registry.death_cooldowns.emplace(loco, 5);
+            if (loco == registry.player) registry.estus_cooldowns.remove(loco);
             if (registry.locked_target.target == loco) GameplaySystem::lock_on_target();
         }
     }

@@ -215,10 +215,10 @@ namespace InputManager {
         move_dir *= player_stats.movement_speed;
         glm::vec4 temp = Transform::create_rotation_matrix({ 0, 0, player_motion.angle }) * glm::vec4(move_dir, 0, 1);
         if (!registry.in_dodges.has(registry.player)) {
-            if (!registry.stagger_cooldowns.has(registry.player)) {
-                player_motion.velocity = { temp.x, temp.y };
-            } else {
+            if (registry.stagger_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) {
                 player_motion.velocity = 0.25f * glm::vec2(temp.x, temp.y);
+            } else {
+                player_motion.velocity = { temp.x, temp.y };
             }
         }
 

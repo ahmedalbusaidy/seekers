@@ -79,6 +79,11 @@ struct AttackBuildup {
     BOSS_ATTACK_TYPE attack_type;
 };
 
+struct EstusCooldown {
+    float timer;
+    EstusCooldown(float t) : timer(t) {}
+};
+
 struct Projectile
 {
     float damage;
