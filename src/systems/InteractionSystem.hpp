@@ -74,6 +74,11 @@ namespace InteractionSystem {
         } else if (comp.type == INTERACTABLE_TYPE::BONFIRE) {
             GameplaySystem::rest();
             // save the game here or inside rest function
+        } else if (comp.type == INTERACTABLE_TYPE::ITEM_PICKUP) {
+            if (registry.level_ups.has(comp.entity)) {
+                GameplaySystem::consume_level_orb(registry.level_ups.get(comp.entity));
+                registry.remove_all_components_of(comp.entity);
+            }
         }
     }
 };

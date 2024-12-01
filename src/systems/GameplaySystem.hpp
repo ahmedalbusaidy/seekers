@@ -6,7 +6,9 @@
 #include <app/EntityFactory.hpp>
 
 namespace GameplaySystem {
-    inline void truly_attack(Entity& e, bool from_boss = false, BOSS_ATTACK_TYPE attack_type = BOSS_ATTACK_TYPE::REGULAR); // in order to use it in update_cooldowns
+    // in order to use in update_cooldowns
+    inline void truly_attack(Entity& e, bool from_boss = false, BOSS_ATTACK_TYPE attack_type = BOSS_ATTACK_TYPE::REGULAR);
+    inline void truly_consume_estus();
 
     inline void update_cooldowns(float elapsed_ms) {
         Registry& registry = MapManager::get_instance().get_active_registry();
@@ -80,6 +82,15 @@ namespace GameplaySystem {
         }
         for (Entity& e : to_be_removed) {
             registry.buildups.remove(e);
+        }
+
+        if (registry.estus_cooldowns.has(registry.player)) {
+            auto& estus_cooldown = registry.estus_cooldowns.get(registry.player);
+            estus_cooldown.timer -= elapsed_ms / 1000.0f;
+            if (estus_cooldown.timer <= 0) {
+                registry.estus_cooldowns.remove(registry.player);
+                truly_consume_estus();
+            }
         }
     }
 
@@ -197,6 +208,7 @@ namespace GameplaySystem {
         deplete_energy(e, Globals::dodge_energy_cost);
 
         registry.buildups.remove(e);
+        if (e == registry.player) registry.estus_cooldowns.remove(e);
 
         float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
         audio.play_dodge(distance_from_camera);
@@ -206,7 +218,15 @@ namespace GameplaySystem {
         Registry& registry = MapManager::get_instance().get_active_registry();
         std::vector<Entity>& esti = registry.inventory.estus;
 
-        if (esti.size() <= 0 || registry.attack_cooldowns.has(registry.player) || registry.stagger_cooldowns.has(registry.player) || registry.death_cooldowns.has(registry.player)) return;
+        if (esti.size() <= 0 || registry.attack_cooldowns.has(registry.player) || registry.stagger_cooldowns.has(registry.player) ||
+            registry.death_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) return;
+
+        registry.estus_cooldowns.emplace(registry.player, 1.0f);
+    }
+
+    inline void truly_consume_estus() {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        std::vector<Entity>& esti = registry.inventory.estus;
 
         LocomotionStats& loco =  registry.locomotion_stats.get(registry.player);
         loco.health = fmin(loco.health + registry.estus.get(esti[0]).heal_amount, loco.max_health);
@@ -350,5 +370,18 @@ namespace GameplaySystem {
         } else {
             audio.play_attack_sword(distance_from_camera);
         }
+    }
+
+    inline void consume_level_orb(LevelUp& level_up) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        LocomotionStats& player_loco = registry.locomotion_stats.get(registry.player);
+        player_loco.max_health += level_up.health;
+        player_loco.max_energy += level_up.energy;
+        player_loco.max_poise += level_up.poise;
+        player_loco.defense += level_up.defense;
+        player_loco.power += level_up.power;
+        player_loco.agility += level_up.agility;
+        registry.inventory.estus_capacity += level_up.estus_num;
+        registry.inventory.estus_heal_amount += level_up.estus_heal;
     }
 };

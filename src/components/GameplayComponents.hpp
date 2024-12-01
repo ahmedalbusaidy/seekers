@@ -43,7 +43,8 @@ struct Inventory
 {
     std::vector<Entity> estus;
     std::vector<Entity> weapons;
-    unsigned int capacity;
+    unsigned int estus_capacity;
+    float estus_heal_amount;
 };
 
 // Added for future milestones
@@ -119,4 +120,15 @@ struct NearCamera {
 
 struct Estus {
     float heal_amount;
+};
+
+struct LevelUp {
+    float health;
+    float energy;
+    float poise;
+    float defense;
+    float power;
+    float agility;
+    unsigned int estus_num;
+    float estus_heal;
 };

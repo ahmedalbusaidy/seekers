@@ -352,6 +352,7 @@ namespace AISystem
         Registry& registry = MapManager::get_instance().get_active_registry();
 
         for (Entity& e : registry.boss_ais.entities) {
+            if (registry.death_cooldowns.has(e)) continue;
             boss_update_aim_angle(e);
             BossAI& comp = registry.boss_ais.get(e);
             if (comp.state == BOSS_STATE::IN_COMBO) {

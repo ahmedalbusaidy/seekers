@@ -64,6 +64,8 @@ public:
 	ComponentContainer<Estus> estus;
 	ComponentContainer<InRest> in_rests;
 	ComponentContainer<AttackBuildup> buildups;
+	ComponentContainer<EstusCooldown> estus_cooldowns;
+	ComponentContainer<LevelUp> level_ups;
 	GridMap grid_map;
 	Entity player;
 	Inventory inventory;
@@ -104,6 +106,8 @@ public:
 		m_registry_list.push_back(&estus);
 		m_registry_list.push_back(&in_rests);
 		m_registry_list.push_back(&buildups);
+		m_registry_list.push_back(&estus_cooldowns);
+		m_registry_list.push_back(&level_ups);
 
 		// create grid map entities
 		grid_map = GridMap();

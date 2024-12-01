@@ -1744,7 +1744,8 @@ private:
             } else {
                 if (reg.in_dodges.has(entity)) {
                     const auto& dodge = reg.in_dodges.get(entity);
-                    model->force_play_animation("Roll.dae", dodge.duration + buffer_time, false, true);
+                    // model->force_play_animation("Roll.dae", dodge.duration + buffer_time, false, true);
+                    model->force_play_animation("Roll.dae", dodge.duration, false, true);
                 }
 
                 // if (reg.attack_cooldowns.has(entity)) {
