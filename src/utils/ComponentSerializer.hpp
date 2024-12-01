@@ -496,17 +496,19 @@ namespace ComponentSerializer {
         return {
             {"type", static_cast<int>(interactable.type)},
             {"entity_id", interactable.entity.get_id()},
-            {"range", interactable.range}
+            {"range", interactable.range},
+            {"dungeon_difficulty", interactable.dungeon_difficulty}
         };
     }
 
     inline void deserialize_interactable(Interactable& interactable, const json& j, const Entity& mapped_entity) {
-        if (!j.contains("type") || !j.contains("range")) {
+        if (!j.contains("type") || !j.contains("range") || !j.contains("dungeon_difficulty")) {
             throw SerializationError("Missing fields in interactable data");
         }
         interactable.type = static_cast<INTERACTABLE_TYPE>(j["type"]);
         interactable.entity = mapped_entity;
         interactable.range = j["range"];
+        interactable.dungeon_difficulty = j["dungeon_difficulty"];
     }
 
     // LightSource serialization
