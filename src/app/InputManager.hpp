@@ -123,6 +123,12 @@ namespace InputManager {
                 }
             }
 
+            if (key == GLFW_KEY_F12) {
+                // spawn level 2 orbs
+                glm::vec2 pos = glm::vec2(player_motion.position.x + cos(player_motion.angle), player_motion.position.y + sin(player_motion.angle));
+                EntityFactory::create_level_up_orb(registry, pos, 2);
+            }
+
             // if (key == GLFW_KEY_G) {
             //     MapManager::get_instance().enter_dungeon_flag = true;
             // }

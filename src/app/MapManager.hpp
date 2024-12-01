@@ -39,7 +39,7 @@ public:
             OpenWorldMapCreatorSystem::populate_open_world_map(registry);
 
             // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
-            EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 10.0f), 0);
+            // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
 
             saved_world_registry = std::make_unique<Registry>();
             *saved_world_registry = *open_world_registry;
