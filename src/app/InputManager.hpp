@@ -32,6 +32,10 @@ namespace InputManager {
             return;
         }
 
+        if (action == GLFW_PRESS && key == GLFW_KEY_H) {
+            Globals::display_stats = !Globals::display_stats;
+        }
+
         if (Globals::is_getting_up) return;
 
         if (action == GLFW_PRESS && key == GLFW_KEY_F) {
