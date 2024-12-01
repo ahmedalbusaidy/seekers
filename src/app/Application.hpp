@@ -301,6 +301,7 @@ public:
         hero.load_animation_from_file("models/Dance.dae");
         hero.load_animation_from_file("models/Hero/Sitting.dae");
         hero.load_animation_from_file("models/Hero/Stand Up.dae");
+        hero.load_animation_from_file("models/Hero/Drinking.dae");
 
         // AnimatedModel hero("models/Hero/Hero (no sword).dae", &animated_shader);
         // hero.load_animation_from_file("models/Hero/Left.dae");
@@ -1762,14 +1763,11 @@ private:
                     model->force_play_animation("Roll.dae", dodge.duration, false, true);
                 }
 
-                // if (reg.attack_cooldowns.has(entity)) {
-                //     const auto& cooldown = reg.attack_cooldowns.get(entity);
-                //     if (glm::length(motion.velocity) > 0.0f) {
-                //         model->play_animation("Running Attack.dae", cooldown.timer + buffer_time, false, true);
-                //     } else {
-                //         model->play_animation("Standing Attack.dae", cooldown.timer + buffer_time, false, true);
-                //     }
-                // }
+                if (reg.estus_cooldowns.has(entity) && entity == reg.player) {
+                    auto& in_estus = reg.estus_cooldowns.get(entity);
+                    model->play_animation("Drinking.dae", in_estus.timer, false, true, false);
+                }
+
                 if (reg.buildups.has(entity)) {
                     const auto& buildup = reg.buildups.get(entity);
                     if (reg.enemies.has(entity)) {
