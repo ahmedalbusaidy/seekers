@@ -20,11 +20,13 @@ public:
             auto player = EntityFactory::create_player(registry, glm::vec2(0.0f, 0.0f));
             auto weapon = EntityFactory::create_weapon(registry, glm::vec2(10.0f, 5.0f), 10.0f);
             registry.attackers.get(player).weapon = weapon;
-            while (registry.inventory.estus.size() < 3) {
+            registry.inventory.estus_capacity = 3;
+            registry.inventory.estus_heal_amount = 120.0f;
+            while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
                 Entity e = Entity();
                 registry.inventory.estus.push_back(e);
                 auto& estus = registry.estus.emplace(e);
-                estus.heal_amount = 120.0f;
+                estus.heal_amount = registry.inventory.estus_heal_amount;
             }
 
             // add dungeon entrance and bonfire here

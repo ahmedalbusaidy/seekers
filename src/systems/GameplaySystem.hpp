@@ -247,11 +247,11 @@ namespace GameplaySystem {
         loco.health = loco.max_health;
         loco.energy = loco.max_energy;
         loco.poise = loco.max_poise;
-        while (registry.inventory.estus.size() < 3) {
+        while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
             Entity e = Entity();
             registry.inventory.estus.push_back(e);
             auto& estus = registry.estus.emplace(e);
-            estus.heal_amount = 120.0f;
+            estus.heal_amount = registry.inventory.estus_heal_amount;
         }
 
         registry.input_state.w_down = false;
