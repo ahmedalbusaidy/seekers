@@ -1662,13 +1662,152 @@ private:
             m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
         FontStuff& font_monkey = FontStuff::get_instance();
-        font_monkey.render_text(std::to_string(int(i)), m_renderer->get_window_width() / 12.0f, m_renderer->get_window_height() / 9.0f, float(m_renderer->get_window_width()) / (1920.f), {1,1,1});
+        float estus_x = m_renderer->get_window_width() / 12.0f;
+        float estus_y = m_renderer->get_window_height() / 9.0f;
+        float estus_size = float(m_renderer->get_window_width()) / (1920.f);
+        font_monkey.render_text(std::to_string(int(i)), estus_x, estus_y, estus_size, {1,1,1});
         
+        float stat_x = m_renderer->get_window_width() / 90.0f;
+        float stat_spacing = m_renderer->get_window_height() / 46.08f;
+        float stat_y = m_renderer->get_window_height() - stat_spacing;
+        float stat_size = float(m_renderer->get_window_width()) / (2.0f * 1920.f);
+        if (reg.locomotion_stats.has(reg.player)) {
+            auto& loco = reg.locomotion_stats.get(reg.player);
+
+            font_monkey.render_text(
+                "Health: " + std::to_string(int(loco.max_health)), 
+                stat_x, 
+                stat_y - stat_spacing * 0.0f, 
+                stat_size, 
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Energy: " + std::to_string(int(loco.max_energy)), 
+                stat_x, 
+                stat_y - stat_spacing * 1.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Poise: " + std::to_string(int(loco.max_poise)), 
+                stat_x, 
+                stat_y - stat_spacing * 2.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Defense: " + std::to_string(int(loco.defense)), 
+                stat_x, 
+                stat_y - stat_spacing * 3.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Power: " + std::to_string(int(loco.power)), 
+                stat_x, 
+                stat_y - stat_spacing * 4.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Agility: " + std::to_string(int(loco.agility)), 
+                stat_x, 
+                stat_y - stat_spacing * 5.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Healing: " + std::to_string(int(reg.inventory.estus_heal_amount)), 
+                stat_x, 
+                stat_y - stat_spacing * 6.0f,
+                stat_size,
+                {1,1,1}
+            );
+        }
 
         _draw_tutorial();
 
         if (reg.near_interactable.is_active) {
             font_monkey.render_text(reg.near_interactable.message.c_str(), m_renderer->get_window_width() / 2.0f, m_renderer->get_window_height() / 2.0f, float(m_renderer->get_window_width()) / 1920.f, {0.95f, 0, 0});
+        
+            if (reg.level_ups.has(reg.near_interactable.interactable)) {
+                auto& lvl_up = reg.level_ups.get(reg.near_interactable.interactable);
+                // lvl_up.
+                stat_x *= 7.0f;
+                if (lvl_up.health >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.health)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 0.0f, 
+                        stat_size, 
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.energy >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.energy)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 1.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.poise >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.poise)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 2.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.defense >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.defense)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 3.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.power >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.power)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 4.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.agility >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.agility)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 5.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.estus_heal >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.estus_heal)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 6.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.estus_num >= 1.0f) {
+                    estus_x *= 1.1f;
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.estus_num)), 
+                        estus_x, 
+                        estus_y,
+                        estus_size,
+                        {1,1,0}
+                    );
+                }
+            }
         }
 
         glm::vec3 fps_colour;
