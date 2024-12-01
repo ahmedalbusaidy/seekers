@@ -27,4 +27,6 @@ namespace Globals {
     bool show_loading_screen = false;
     bool in_pause = true;
     bool after_pause = false;
+    glm::vec2 desired_camera_position = glm::vec2(0.0f);
+    bool display_stats = true;
 }

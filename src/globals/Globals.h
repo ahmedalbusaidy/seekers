@@ -15,6 +15,7 @@
 #define MAP_WIDTH 500
 #define MAP_HEIGHT 500
 #define CAMERA_DISTANCE_FROM_WORLD 20.0f
+#include <glm/vec2.hpp>
 #include <utils/Timer.h>
 
 namespace Globals {
@@ -38,4 +39,6 @@ namespace Globals {
     extern bool show_loading_screen;
     extern bool in_pause;
     extern bool after_pause;
+    extern glm::vec2 desired_camera_position;
+    extern bool display_stats;
 }
