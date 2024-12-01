@@ -117,7 +117,7 @@ namespace EntityFactory {
         return entity;
     }
 
-    inline Entity create_projectile(Registry& registry, Motion& attacker_motion, Attacker& attacker, Weapon& weapon, TEAM_ID team_id) {
+    inline Entity create_projectile(Registry& registry, Motion& attacker_motion, Attacker& attacker, Weapon& weapon, TEAM_ID team_id, float power = 0.0f) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
@@ -129,7 +129,7 @@ namespace EntityFactory {
         motion.scale = glm::vec2(1.0f, 1.0f);  // Projectile size
 
         auto& projectile = registry.projectiles.emplace(entity);
-        projectile.damage = weapon.damage;
+        projectile.damage = weapon.damage + power * 0.01f * weapon.damage;
         projectile.range_remaining = weapon.range;
         projectile.stagger_duration = weapon.stagger_duration;
         projectile.poise_points = weapon.poise_points;

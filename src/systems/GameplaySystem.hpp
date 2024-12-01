@@ -360,7 +360,7 @@ namespace GameplaySystem {
         if (from_boss) {
             boss_attack(e, motion, attacker, weapon, attack_type);
         } else {
-            EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id);
+            EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id, registry.locomotion_stats.get(e).power);
             registry.attack_cooldowns.emplace(e, weapon.attack_cooldown);
             deplete_energy(e, weapon.attack_energy_cost);
         }
