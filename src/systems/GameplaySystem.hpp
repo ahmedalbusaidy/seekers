@@ -371,4 +371,17 @@ namespace GameplaySystem {
             audio.play_attack_sword(distance_from_camera);
         }
     }
+
+    inline void consume_level_orb(LevelUp& level_up) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        LocomotionStats& player_loco = registry.locomotion_stats.get(registry.player);
+        player_loco.max_health += level_up.health;
+        player_loco.max_energy += level_up.energy;
+        player_loco.max_poise += level_up.poise;
+        player_loco.defense += level_up.defense;
+        player_loco.power += level_up.power;
+        player_loco.agility += level_up.agility;
+        registry.inventory.estus_capacity += level_up.estus_num;
+        registry.inventory.estus_heal_amount += level_up.estus_heal;
+    }
 };

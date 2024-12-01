@@ -512,12 +512,11 @@ namespace EntityFactory {
     }
 
     inline Entity create_level_up_orb(Registry& registry, glm::vec2 position, int level) {
-        // TODO
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
         motion.position = position;
-        motion.scale = glm::vec2(1.5f);
+        motion.scale = glm::vec2(1.0f);
 
         auto& obj = registry.static_objects.emplace(entity);
         obj.type = STATIC_OBJECT_TYPE::LEVEL_UP_ORB;
@@ -527,6 +526,18 @@ namespace EntityFactory {
         interact.range = 5.0f;
         interact.type = INTERACTABLE_TYPE::ITEM_PICKUP;
 
+        // TODO: randomize based on level and max possible stats
+        auto& level_up = registry.level_ups.emplace(entity);
+        level_up.health = 50.0f;
+        level_up.energy = 50.0f;
+        level_up.poise = 50.0f;
+        level_up.defense = 10.0f;
+        level_up.power = 10.0f;
+        level_up.agility = 10.0f;
+        level_up.estus_num = 1;
+        level_up.estus_heal = 10.0f;
+
+        // TODO: set the light color depending on stats
         LightSource& light_source = registry.light_sources.emplace(entity);
         light_source.pos = glm::vec3(position, 0.2f);
         light_source.brightness = 4.0f;

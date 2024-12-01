@@ -539,7 +539,7 @@ namespace ComponentSerializer {
         return {
             {"estus_ids", estus_ids},
             {"weapon_ids", weapon_ids},
-            {"capacity", inventory.capacity}
+            {"estus_capacity", inventory.estus_capacity}
         };
     }
 
@@ -549,7 +549,7 @@ namespace ComponentSerializer {
             throw SerializationError("Missing fields in inventory data");
         }
         
-        inventory.capacity = j["capacity"];
+        inventory.estus_capacity = j["estus_capacity"];
         inventory.estus.clear();
         inventory.weapons.clear();
         
