@@ -6,7 +6,7 @@
 #define PI 3.1415926535
 
 
-namespace OpenWorldMapCreatorSystem {
+namespace MapCreatorSystem {
     inline bool is_position_valid(const glm::vec2& new_pos, const std::vector<glm::vec2>& existing_positions, float min_distance) {
         for (const auto& pos : existing_positions) {
             if (glm::distance(new_pos, pos) < min_distance) {
@@ -90,5 +90,11 @@ namespace OpenWorldMapCreatorSystem {
         // create_forest(registry, glm::vec2(-180.f, 160.f), 150);
         // EntityFactory::create_rock(registry, {50, 50});                         // example of rock
         // EntityFactory::create_tree(registry, glm::vec2(40.f, 40.f), PI);     // example of tree with angle
+    }
+
+
+    inline void populate_spire_map(Registry& registry) {
+        // TODO: Spire map stuff here
+        EntityFactory::create_light_source(registry, {0, 0, 100}, 50, {1, 1, 1}, LIGHT_SOURCE_TYPE::SUN);
     }
 };
