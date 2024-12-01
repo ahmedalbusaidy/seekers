@@ -25,6 +25,9 @@ public:
         if (map_manager.dungeon_registry) {
             map_data["dungeon_registry"] = RegistrySerializer::serialize_registry(*map_manager.dungeon_registry);
         }
+        if (map_manager.spire_registry) {
+            map_data["spire_registry"] = RegistrySerializer::serialize_registry(*map_manager.spire_registry);
+        }
         if (map_manager.saved_world_registry) {
             map_data["saved_world_registry"] = RegistrySerializer::serialize_registry(*map_manager.saved_world_registry);
         }
@@ -34,6 +37,8 @@ public:
             map_data["active_registry"] = "open_world";
         } else if (map_manager.active_registry == map_manager.dungeon_registry.get()) {
             map_data["active_registry"] = "dungeon";
+        } else if (map_manager.active_registry == map_manager.spire_registry.get()) {
+            map_data["active_registry"] = "spire";
         } else if (map_manager.active_registry == map_manager.saved_world_registry.get()) {
             map_data["active_registry"] = "saved_world";
         }
@@ -45,6 +50,7 @@ public:
         // First, clean up everything
         map_manager.dungeon_registry.reset();
         map_manager.open_world_registry.reset();
+        map_manager.spire_registry.reset();
         map_manager.saved_world_registry.reset();
         map_manager.active_registry = nullptr;
 
@@ -65,6 +71,10 @@ public:
             map_manager.dungeon_registry = std::make_unique<Registry>();
             RegistrySerializer::deserialize_registry(*map_manager.dungeon_registry, map_data["dungeon_registry"]);
         }
+        if (map_data.contains("spire_registry")) {
+            map_manager.spire_registry = std::make_unique<Registry>();
+            RegistrySerializer::deserialize_registry(*map_manager.spire_registry, map_data["spire_registry"]);
+        }
         if (map_data.contains("saved_world_registry")) {
             map_manager.saved_world_registry = std::make_unique<Registry>();
             RegistrySerializer::deserialize_registry(*map_manager.saved_world_registry, map_data["saved_world_registry"]);
@@ -77,6 +87,8 @@ public:
                 map_manager.active_registry = map_manager.open_world_registry.get();
             } else if (active_reg == "dungeon") {
                 map_manager.active_registry = map_manager.dungeon_registry.get();
+            } else if (active_reg == "spire") {
+                map_manager.active_registry = map_manager.spire_registry.get();
             } else if (active_reg == "saved_world") {
                 map_manager.active_registry = map_manager.saved_world_registry.get();
             }
