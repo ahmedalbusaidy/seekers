@@ -36,4 +36,6 @@ namespace Globals {
     extern bool is_getting_up;
     extern void* ptr_window;
     extern bool show_loading_screen;
+    extern bool in_pause;
+    extern bool after_pause;
 }

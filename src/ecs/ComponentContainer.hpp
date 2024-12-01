@@ -90,6 +90,10 @@ public:
 		return map_entity_componentID.count(entity) > 0;
 	}
 
+	bool has(unsigned int entity_id) {
+		return map_entity_componentID.count(entity_id) > 0;
+	}
+
 	// Remove an component and pack the container to re-use the empty space
 	void remove(unsigned int entity_id) {
 		if (map_entity_componentID.count(entity_id) > 0)

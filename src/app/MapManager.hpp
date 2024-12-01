@@ -25,11 +25,13 @@ public:
             auto player = EntityFactory::create_player(registry, glm::vec2(0.0f, 0.0f));
             auto weapon = EntityFactory::create_weapon(registry, glm::vec2(10.0f, 5.0f), 10.0f);
             registry.attackers.get(player).weapon = weapon;
-            while (registry.inventory.estus.size() < 3) {
+            registry.inventory.estus_capacity = 3;
+            registry.inventory.estus_heal_amount = 120.0f;
+            while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
                 Entity e = Entity();
                 registry.inventory.estus.push_back(e);
                 auto& estus = registry.estus.emplace(e);
-                estus.heal_amount = 120.0f;
+                estus.heal_amount = registry.inventory.estus_heal_amount;
             }
 
             // add dungeon entrance and bonfire here
@@ -40,6 +42,9 @@ public:
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
             OpenWorldMapCreatorSystem::populate_open_world_map(registry);
+
+            // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
+            // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 10.0f), 0);
 
             saved_world_registry = std::make_unique<Registry>();
             *saved_world_registry = *open_world_registry;
@@ -59,6 +64,9 @@ public:
         //     // Populate spire3 entities here (player should not be added, just the level)
         // }
         active_registry = open_world_registry.get();
+
+        spire_registry = std::make_unique<Registry>();
+        // TODO: populate spire
     }
 
     // Called on respawns (ie. player death)
@@ -227,9 +235,7 @@ private:
 
     std::unique_ptr<Registry> open_world_registry;    // Persistent open world registry
     std::unique_ptr<Registry> dungeon_registry;       // Temporary dungeon registry
-    // std::unique_ptr<Registry> spire_one_registry;     // Spire1 registry for future use
-    // std::unique_ptr<Registry> spire_two_registry;     // Spire2 registry for future use
-    // std::unique_ptr<Registry> spire_three_registry;   // Spire3 registry for future use
+    std::unique_ptr<Registry> spire_registry;         // Persistent spire registry
     std::unique_ptr<Registry> saved_world_registry;   // Instance of last saved checkpoint (only open_world has save ability)
     Registry* active_registry = nullptr;              // Points to the currently active registry
 };

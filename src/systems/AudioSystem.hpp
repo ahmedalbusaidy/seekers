@@ -123,6 +123,11 @@ public:
         }
     }
 
+    // Brendon ?!
+    void stop_footstep() {
+        stop_footstep(footstep_channel);
+    }
+
     inline float find_multiplier_with_distance(float distance = 0.0f) {
         return (1/(0.1*distance+1)) * (1/(0.1*distance+1));
     }

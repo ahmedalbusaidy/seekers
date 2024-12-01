@@ -13,6 +13,7 @@
 #include <renderer/AnimatedModel.hpp>
 #include <renderer/StaticModel.hpp>
 #include <renderer/FontStuff.hpp>
+#include <renderer/Menu.hpp>
 #include <ecs/Registry.hpp>
 #include <app/World.h>
 #include <app/InputManager.hpp>
@@ -28,6 +29,8 @@
 #include <iomanip>
 #include <vector>
 #include <unordered_map>
+#include <memory>
+#include <functional>
 
 #define MAX_LIGHTS 25
 
@@ -45,6 +48,9 @@ class Application {
     Shader* m_wall_shader;
 
     StaticModel* m_spooky_tree;
+    StaticModel* m_crystal;
+    StaticModel* m_statue;
+    StaticModel* m_bmw;
     StaticModel* m_light_orb;
     StaticModel* m_campfire;
     StaticModel* m_dungeon_entrance;
@@ -65,7 +71,8 @@ class Application {
     Texture2D* m_hud_health_texture_bacground;
     Texture2D* m_redbull;
     Texture2D* m_lock_on_reticle;
-    Texture2D* m_home_page;
+    Texture2D* m_loading_tex;
+    Texture2D* m_home_tex;
 
     glm::vec3 m_light_pos;
     glm::vec3 m_light_colour;
@@ -80,6 +87,12 @@ class Application {
 
     std::unordered_map<unsigned int, AnimatedModel*> m_models;
     bool m_player_was_in_rest = false;
+
+    std::unique_ptr<Menu> main_menu;
+    std::unordered_map<std::string, Texture2D*> m_menu_textures;
+    bool m_game_in_session = false;
+
+    float m_frame_rate = 0.0f;
 public:
     Application() : m_light_pos(1.0f, 1.0f, 2.0f) {
         // Setup
@@ -92,6 +105,7 @@ public:
             false,
             true
         );
+        m_renderer->set_icon("textures/favicon.png");
         m_camera.init(m_renderer->get_window_width(), m_renderer->get_window_height());
 
         m_hud_health_texture_fill = new Texture2D("sphere_fill.png");
@@ -106,7 +120,17 @@ public:
         m_map_texture = new Texture2D("jungle_tile_1.jpg");
         // m_wall_texture = new Texture2D("tileset_1.png"); // bricks
         m_wall_texture = new Texture2D("jungle_tile_1.jpg");
-        m_home_page = new Texture2D("menu/seekers_background.JPG");
+        // m_loading_tex = new Texture2D("menu/seekers_background.JPG");
+        m_loading_tex = new Texture2D("menu/loading.JPG");
+        // m_home_tex =  new Texture2D("menu/home.jpg");
+        m_menu_textures["newgame"] = new Texture2D("menu/newgame.png");
+        m_menu_textures["hover_newgame"] = new Texture2D("menu/hover_newgame.png");
+        m_menu_textures["load"] = new Texture2D("menu/load.png");
+        m_menu_textures["hover_load"] = new Texture2D("menu/hover_load.png");
+        m_menu_textures["quit"] = new Texture2D("menu/quit.png");
+        m_menu_textures["hover_quit"] = new Texture2D("menu/hover_quit.png");
+        m_menu_textures["resume"] = new Texture2D("menu/resume.png");
+        m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.png");
         
         m_wall_shader = new Shader("StaticBlinnPhong");
         m_floor_shader = new Shader("StaticBlinnPhong");
@@ -143,6 +167,30 @@ public:
         m_spooky_tree->mesh_list.back()->set_texture(m_spooky_tree->texture_list.back());
         m_spooky_tree->set_pre_transform(
             Transform::create_scaling_matrix(glm::vec3(0.15f, 0.15f, 0.35f))
+        );
+
+        m_crystal = new StaticModel("models/Crystal.dae", m_wall_shader);
+        m_crystal->set_pre_transform(
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
+        );
+
+        // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);
+        // m_bmw->set_pre_transform(
+        //     Transform::create_model_matrix(
+        //         {0, 0, 0},
+        //         {PI / 2.0f, 0, 0},
+        //         glm::vec3(3.0f)
+        //     )
+        // );
+
+        m_statue = new StaticModel("models/Statue.obj", m_wall_shader);
+        m_statue->set_pre_transform(
+            Transform::create_model_matrix(
+                {0, 0, 0},
+                {PI / 2.0f, 0, 0},
+                glm::vec3(0.03f)
+            )
         );
 
         m_light_orb = new StaticModel("models/Orb_low.obj", m_wall_shader);
@@ -225,7 +273,7 @@ public:
     }
 
     void run_game_loop() { 
-        _draw_home_page();
+        _draw_loading_screen();
         
         // Get keys inputs from input manager
         m_renderer->set_on_key_callback_fn((void*)InputManager::on_key_pressed);
@@ -343,6 +391,8 @@ public:
         //     hero.play_animation(0);
         // }
 
+        _init_menu();
+
         World world;
         world.demo_init();
 
@@ -368,8 +418,17 @@ public:
                 delta_time = float(timer.GetTime()) - time_of_last_frame;
             }
             float delta_time_s = delta_time * 0.000001f;
-            m_renderer->set_title(m_window_name + " | FPS: " + std::to_string(1.0f / delta_time_s));
+            m_frame_rate = 1.0f / delta_time_s;
+            // m_renderer->set_title(m_window_name + " | FPS: " + std::to_string(m_frame_rate));
             time_of_last_frame = float(timer.GetTime());
+
+            if (Globals::in_pause) {// testing menustd::unique_ptr<
+                m_renderer->unlock_cursor();
+                menu_update();
+                main_menu->draw(m_renderer, m_hud_health_shader, m_square_mesh);
+                continue;
+            }
+            m_renderer->lock_cursor();
 
             world.step(delta_time * 0.001f);
             Registry& reg = MapManager::get_instance().get_active_registry();
@@ -383,9 +442,9 @@ public:
             // Game restart
             if (Globals::restart_renderer) {
                 Globals::restart_renderer = false;
-                _draw_home_page();
+                _draw_loading_screen();
 
-                _draw_home_page();
+                _draw_loading_screen();
 
                 m_camera.set_position({ 0, 0, CAMERA_DISTANCE_FROM_WORLD });
                 for (auto& kv : m_models) {
@@ -431,13 +490,13 @@ public:
 
             if (map_monkey.enter_dungeon_flag || map_monkey.return_open_world_flag) {
                 // loading screen?
-                _draw_home_page();
+                _draw_loading_screen();
                 continue;
             }
 
             if (map_monkey.enter_dungeon_flag || map_monkey.return_open_world_flag) {
                 // loading screen?
-                _draw_home_page();
+                _draw_loading_screen();
                 continue;
             }
 
@@ -597,6 +656,14 @@ public:
             for (auto& id : m_to_be_updated_and_drawn) {
                 auto kv = m_models.find(id);
                 if (kv == m_models.end() || kv->second == nullptr) { continue; }
+                if (reg.enemies.has(id)) {
+                    auto& enm = reg.enemies.get(id);
+                    if (enm.type == ENEMY_TYPE::WARRIOR) {
+                        m_wall_shader->set_uniform_3f("u_object_color", { 170.0f / 255.0f, 169.0f / 255.0f, 173.0f/255.0f });
+                    } else if (enm.type == ENEMY_TYPE::ARCHER) {
+                        m_wall_shader->set_uniform_3f("u_object_color", { 150.0f / 255.0f, 111.0f / 255.0f, 151.0f/255.0f });
+                    }
+                }
                 kv->second->draw();
             }
 
@@ -1009,6 +1076,30 @@ public:
         }
     }
 
+    void _or_something() { 
+        std::cout << "Mentally cheeeecked out" << std::endl;
+    }
+
+    void unpause() { 
+        Globals::in_pause = false; 
+        if (!m_game_in_session) {
+            m_game_in_session = true;
+            _add_resume_to_menu();
+        }
+    }
+    
+    void load() { 
+        std::cout << "Mentally cheeeecked out" << std::endl;
+        if (!m_game_in_session) {
+            m_game_in_session = true;
+            _add_resume_to_menu();
+        }
+    }
+
+    void quit() { 
+        m_renderer->terminate();
+    }
+
 private:
     void _handle_free_camera_inputs() {
         glm::vec3 moveDirection(0.0f);
@@ -1250,28 +1341,40 @@ private:
                 m_campfire->draw();
             } else if (static_object.type == STATIC_OBJECT_TYPE::PORTAL) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-                m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
                 m_portal->set_position(glm::vec3(motion.position, 0.0f));
                 m_portal->set_rotation_z(motion.angle);
                 m_portal->draw();
-                // change colour back lol
-                m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+                
+                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
             } else if (static_object.type == STATIC_OBJECT_TYPE::DUNGEON_ENTRANCE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 86.0f/ 255.0f, 86.0f / 255.0f, 86.0f / 255.0f });
                 m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
                 m_dungeon_entrance->set_rotation_z(motion.angle);
                 m_dungeon_entrance->draw();
                 // change colour back lol
-                m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+                // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
+            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
+                m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
+                m_dungeon_entrance->set_rotation_z(motion.angle);
+                m_crystal->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+                m_statue->set_position(glm::vec3(motion.position, 0.0f));
+                m_statue->set_rotation_z(motion.angle);
+                m_statue->draw();
             }
         }
 
         // int x = 0;
-        // for (auto& rock : m_rocks) {
-        //     rock->set_position_x(x);
-        //     rock->draw();
+        // for (auto ewqrqf : {1,2,3,4,5,6}) {
+        //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+        //     m_bmw->set_position_x(x);
+        //     m_bmw->draw();
         //     x += 50;
         // }
+        // change colour back lol
+        m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
     }
 
     void _draw_projectiles() {
@@ -1289,11 +1392,13 @@ private:
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
+                m_wall_shader->set_uniform_3f("u_object_color", { 153.0f/255.0f, 102.0f/255.0f, 151.0f/255.0f });
                 m_arrow->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
                 m_banana->set_rotation_z(motion.angle);
                 m_banana->set_rotation_z(motion.angle);
+                m_wall_shader->set_uniform_3f("u_object_color", { 109.0f/255.0f, 170.0f/255.0f, 255.0f/255.0f });
                 m_banana->draw();
             }
         }
@@ -1420,19 +1525,19 @@ private:
         m_renderer->draw(m_square_mesh, *m_hud_health_shader);
     }
 
-    void _draw_home_page() {
+    void _draw_loading_screen() {
         m_renderer->begin_draw();
         m_renderer->disable_depth_test();
 
         const float aspect_ratio = float(m_renderer->get_window_width()) / float(m_renderer->get_window_height());
-        const float width = 2 / aspect_ratio;
+        const float width = 2;
         const float height = 2;
 
         const float pos_x = 0.0f;
         const float pos_y = 0.0f;
 
         m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
-        m_hud_health_shader->set_uniform_1i("u_texture", m_home_page->bind(28));
+        m_hud_health_shader->set_uniform_1i("u_texture", m_loading_tex->bind(28));
         m_hud_health_shader->set_uniform_1f("u_health_percentage", 1);
         m_hud_health_shader->set_uniform_mat4f("u_model",
             Transform::create_model_matrix(
@@ -1443,7 +1548,8 @@ private:
         );
         m_renderer->draw(m_square_mesh, *m_hud_health_shader);
 
-        FontStuff::get_instance().render_text("Loading...", m_renderer->get_window_width() / 2.0f - m_renderer->get_window_width() / 8.0f, m_renderer->get_window_height() / 12.0f, float(m_renderer->get_window_width()) / (1920.f / 3.f), {1, 1, 1});
+        FontStuff& font_stuff = FontStuff::get_instance();
+        font_stuff.render_text("Loading...", m_renderer->get_window_width() / 2.0f - m_renderer->get_window_width() / 8.0f, m_renderer->get_window_height() / 12.0f, float(m_renderer->get_window_width()) / (1920.f / 3.f), {1, 1, 1});
 
         m_renderer->enable_depth_test();
         m_renderer->end_draw();
@@ -1514,21 +1620,42 @@ private:
         float i = 0;
         for (const auto& estus_shit : reg.inventory.estus) {
             m_hud_health_shader->set_uniform_mat4f("u_model",
-                Transform::create_model_matrix(
-                    {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
-                    {0, 0, 0},
-                    {0.125f, 0.25f, 1}
+                // Transform::create_model_matrix(
+                //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
+                //     {0, 0, 0},
+                //     {0.125f, 0.25f, 1}
+                // )
+                Transform::create_translation_matrix(
+                    {-1 + i++ * 0.005f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
+                ) * 
+                Transform::create_scaling_matrix(
+                    {1.5f*0.125f, 1.5*0.25f, 1}
+                ) *
+                Transform::create_rotation_matrix(
+                    {0, 0, PI / 16.0f + (i+1) * -PI / 32.0f}
                 )
             );
             m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
+        FontStuff& font_monkey = FontStuff::get_instance();
+        font_monkey.render_text(std::to_string(int(i)), m_renderer->get_window_width() / 12.0f, m_renderer->get_window_height() / 9.0f, float(m_renderer->get_window_width()) / (1920.f), {1,1,1});
+        
 
         _draw_tutorial();
 
         if (reg.near_interactable.is_active) {
-            FontStuff& font_monkey = FontStuff::get_instance();
             font_monkey.render_text(reg.near_interactable.message.c_str(), m_renderer->get_window_width() / 2.0f, m_renderer->get_window_height() / 2.0f, float(m_renderer->get_window_width()) / 1920.f, {0.95f, 0, 0});
         }
+
+        glm::vec3 fps_colour;
+        if (m_frame_rate >= 45.0f) {
+            fps_colour = {0, 1, 0};
+        } else if (m_frame_rate >= 24.0f) {
+            fps_colour = {1, 1, 0};
+        } else {
+            fps_colour = {1, 0, 0};
+        }
+        FontStuff::get_instance().render_text("fps: " + std::to_string(int(m_frame_rate)), m_renderer->get_window_width() - m_renderer->get_window_width() / 20.0f, m_renderer->get_window_height() - m_renderer->get_window_height() / 20.0f, float(m_renderer->get_window_width()) / (1920.f * 3.0f), fps_colour);
 
         m_renderer->enable_depth_test();
 
@@ -1608,7 +1735,8 @@ private:
             } else {
                 if (reg.in_dodges.has(entity)) {
                     const auto& dodge = reg.in_dodges.get(entity);
-                    model->force_play_animation("Roll.dae", dodge.duration + buffer_time, false, true);
+                    // model->force_play_animation("Roll.dae", dodge.duration + buffer_time, false, true);
+                    model->force_play_animation("Roll.dae", dodge.duration, false, true);
                 }
 
                 if (reg.attack_cooldowns.has(entity)) {
@@ -1666,6 +1794,83 @@ private:
 
             model->update();
         }
+    }
+
+    float _button_height = 0.15f;
+    float _button_spacing = 1.5f;
+
+    void _add_resume_to_menu() {
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * 1.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["resume"],
+                m_menu_textures["hover_resume"],
+                std::bind(&Application::unpause, this)
+            )
+        );
+    }
+
+    void _init_menu() {
+        main_menu = std::make_unique<Menu>("menu/home.png");
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * 0.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["newgame"],
+                m_menu_textures["hover_newgame"],
+                std::bind(&Application::unpause, this)
+            )
+        );
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * -1.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["load"],
+                m_menu_textures["hover_load"],
+                std::bind(&Application::load, this)
+            )
+        );
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * -2.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["quit"],
+                m_menu_textures["hover_quit"],
+                std::bind(&Application::quit, this)
+            )
+        );
+    }
+
+    void menu_update() {
+        if (glfwGetMouseButton((GLFWwindow *)m_renderer->get_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            double mouse_x, mouse_y;
+            glfwGetCursorPos((GLFWwindow *)m_renderer->get_window(), &mouse_x, &mouse_y);
+
+            main_menu->handle_click(float(mouse_x), float(mouse_y));
+        }
+
+        double mouse_x, mouse_y;
+        // Get mouse position from your window system
+        glfwGetCursorPos((GLFWwindow *)m_renderer->get_window(), &mouse_x, &mouse_y);
+        // float x, y;
+        // x = float(mouse_x);
+        // y = float(mouse_y);
+        main_menu->update(
+            2.0f * (float(mouse_x) / float(m_renderer->get_window_width()) - 0.5f), 
+            -2.0f * (float(mouse_y) / float(m_renderer->get_window_height()) - 0.5f));
+        // main_menu->update(x, y);
+        // main_menu->update(100, 200);
+
+        // m_renderer->
     }
 
     //helpers

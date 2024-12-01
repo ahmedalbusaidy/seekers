@@ -249,4 +249,120 @@ namespace AISystem
             }
         }
     }
+
+    // boss AI stuff down here
+    inline void boss_dodge(Entity& boss_entity, float dodge_ratio) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dodge_dist(0.0f, 1.0f);
+
+        for (Entity& e : registry.projectiles.entities) {
+            if (glm::distance(registry.motions.get(e).position, registry.motions.get(boss_entity).position) < 4.0f &&
+                registry.teams.get(e).team_id == TEAM_ID::FRIENDLY) {
+                if (dodge_dist(gen) <= dodge_ratio) {
+                    GameplaySystem::dodge(boss_entity);
+                    return;
+                }
+            }
+        }
+    }
+
+    inline void boss_pick_combo(BossAI& comp) {
+        // TODO: add Q-learning stuff here
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dist(0, comp.combos.size() - 1);
+        comp.combo_index = dist(gen);
+    }
+
+    inline void boss_combo_step(Entity& e, BossAI& comp, float elapsed_ms) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        Motion& boss_motion = registry.motions.get(e);
+        Motion& player_motion = registry.motions.get(registry.player);
+        LocomotionStats& boss_loco = registry.locomotion_stats.get(e);
+
+        comp.attack_delay_counter -= elapsed_ms / 1000.0f;
+        // close the gap with the player if necessary
+        if (glm::distance(boss_motion.position, player_motion.position) < comp.attack_range) {
+            boss_motion.velocity = glm::vec2(0.0f);
+        } else {
+            boss_motion.velocity = glm::normalize(player_motion.position - boss_motion.position) * boss_loco.movement_speed;
+            return;
+        }
+
+        if (comp.attack_delay_counter > 0.0f) return;
+
+        BOSS_ATTACK_TYPE attack_type = comp.combos.at(comp.combo_index).attacks.at(comp.attack_index);
+        if (!GameplaySystem::attack(e, 0.3, true, attack_type)) return;
+
+        // update comp
+        comp.attack_index++;
+        if (comp.attack_index >= comp.combos.at(comp.combo_index).attacks.size()) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_real_distribution<float> cooldown_dist(0.5f, 5.0f);
+            std::uniform_real_distribution<float> move_multi_dist(-0.3f, 0.3f);
+            comp.state = BOSS_STATE::COOLDOWN;
+            comp.cooldown_delay_counter = cooldown_dist(gen);
+            boss_motion.velocity = glm::vec2(-sin(boss_motion.angle), cos(boss_motion.angle)) * boss_loco.movement_speed * move_multi_dist(gen);
+        } else {
+            comp.attack_delay_counter = comp.combos.at(comp.combo_index).delays.at(comp.attack_index);
+        }
+    }
+
+    inline void boss_cooldown(Entity& e, BossAI& comp, float elapsed_ms) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        Motion& boss_motion = registry.motions.get(e);
+        glm::vec2 new_velocity = glm::vec2(-sin(boss_motion.angle), cos(boss_motion.angle)) * glm::length(boss_motion.velocity);
+        boss_motion.velocity = glm::dot(boss_motion.velocity, new_velocity) > 0 ? new_velocity : -new_velocity;
+        comp.cooldown_delay_counter -= elapsed_ms / 1000.0f;
+        if (comp.cooldown_delay_counter <= 0.0f) {
+            comp.state = BOSS_STATE::CHASE;
+        }
+        boss_dodge(e, comp.dodge_ratio);
+    }
+
+    inline void boss_chase(Entity& e, BossAI& comp) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        Motion& boss_motion = registry.motions.get(e);
+        Motion& player_motion = registry.motions.get(registry.player);
+
+        if (glm::distance(boss_motion.position, player_motion.position) < comp.attack_range) {
+            comp.state = BOSS_STATE::IN_COMBO;
+            boss_pick_combo(comp);
+            comp.attack_index = 0;
+            comp.attack_delay_counter = comp.combos.at(comp.combo_index).delays.at(0);
+        } else {
+            boss_motion.velocity = glm::normalize(player_motion.position - boss_motion.position) * registry.locomotion_stats.get(e).movement_speed;
+            boss_dodge(e, comp.dodge_ratio);
+        }
+    }
+
+    inline void boss_update_aim_angle(Entity& e) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        Motion& motion = registry.motions.get(e);
+        Attacker& attacker = registry.attackers.get(e);
+        attacker.aim = glm::normalize(registry.motions.get(registry.player).position - motion.position);
+        motion.angle = atan2(attacker.aim.y, attacker.aim.x);
+    }
+
+    inline void boss_AI_step(float elapsed_ms) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+
+        for (Entity& e : registry.boss_ais.entities) {
+            if (registry.death_cooldowns.has(e)) continue;
+            boss_update_aim_angle(e);
+            BossAI& comp = registry.boss_ais.get(e);
+            if (comp.state == BOSS_STATE::IN_COMBO) {
+                boss_combo_step(e, comp, elapsed_ms);
+            } else if (comp.state == BOSS_STATE::COOLDOWN) {
+                boss_cooldown(e, comp, elapsed_ms);
+            } else if (comp.state == BOSS_STATE::CHASE) {
+                boss_chase(e, comp);
+
+            }
+        }
+    }
 };
