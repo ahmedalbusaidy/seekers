@@ -201,6 +201,7 @@ namespace GameplaySystem {
         glm::vec2 dodge_target_pos;
         if (glm::length(motion.velocity) < 0.00001) {
             dodge_target_pos = motion.position + -glm::vec2(cos(motion.angle), sin(motion.angle)) * Globals::dodgeMoveMag;
+            motion.velocity = -glm::vec2(cos(motion.angle), sin(motion.angle)); // to play the animation in the correct direction
         } else {
             dodge_target_pos = motion.position + Common::normalize(motion.velocity) * Globals::dodgeMoveMag;
         }
