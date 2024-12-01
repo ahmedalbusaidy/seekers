@@ -537,7 +537,8 @@ namespace EntityFactory {
         }
         std::mt19937 gen(std::random_device{}());
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        std::array<float, 7> floats;
+        std::vector<float> floats;
+        floats.resize(7);
         for (auto& f : floats) f = dist(gen);
         std::sort(floats.begin(), floats.end());
         float health_points = floats.at(0) * total_points;
