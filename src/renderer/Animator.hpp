@@ -21,6 +21,7 @@ private:
     bool m_should_finish = false;
     float m_duration_s = 1.0f;
     bool m_should_play_backwards = false;
+    float m_stop_at_s = -1.0f;
 
     void _step_time() {
         float current_time = float(m_timer.GetTime()) / 1000000.0f;  // Convert microseconds to seconds
@@ -39,6 +40,17 @@ private:
                 m_animation_time = fmod(m_animation_time, m_duration_s);
                 if (m_animation_time < 0) {  // fmod can return negative values
                     m_animation_time += m_duration_s;
+                }
+            } else if (m_stop_at_s > 0.0f && m_animation_time > m_stop_at_s) {
+                if (!m_should_repeat) {
+                    m_animation_time = m_stop_at_s;
+                    // set_animation(nullptr);
+                    return;
+                }
+
+                m_animation_time = fmod(m_animation_time, m_stop_at_s);
+                if (m_animation_time < 0) {
+                    m_animation_time += m_stop_at_s;
                 }
             }
         }
@@ -81,13 +93,21 @@ public:
         return m_animation_time / m_duration_s;
     }
 
-    void set_animation(Animation* animation, const float& duration_s = 1.0f, const bool& should_repeat = true, const bool& should_finish = false, const bool& should_play_backwards = false) {
+    void set_animation(
+        Animation* animation, 
+        const float& duration_s = 1.0f, 
+        const bool& should_repeat = true, 
+        const bool& should_finish = false, 
+        const bool& should_play_backwards = false, 
+        const float& stop_at_s = -1.0f
+    ) {
         m_current_animation = animation;
         m_animation_time = 0.0f;
         m_should_repeat = should_repeat;
         m_should_finish = should_finish;
         m_should_play_backwards = should_play_backwards;
         m_duration_s = duration_s;
+        m_stop_at_s = stop_at_s;
         m_time_of_prev_frame = float(m_timer.GetTime()) / 1000000.0f;  // Convert microseconds to seconds
     }
 

@@ -179,7 +179,7 @@ namespace GameplaySystem {
 
         if (registry.attack_cooldowns.has(e) || registry.buildups.has(e) ||
             registry.stagger_cooldowns.has(e) || registry.death_cooldowns.has(e) ||
-            registry.locomotion_stats.get(e).energy <= 0) return false;
+            registry.locomotion_stats.get(e).energy <= 0 || registry.estus_cooldowns.has(e)) return false;
 
         AttackBuildup& buildup = registry.buildups.emplace(e);
         buildup.timer = buildup_duration;
