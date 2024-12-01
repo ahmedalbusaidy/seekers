@@ -50,6 +50,7 @@ class Application {
     StaticModel* m_spooky_tree;
     StaticModel* m_crystal;
     StaticModel* m_statue;
+    StaticModel* m_level_up_orb;
     StaticModel* m_bmw;
     StaticModel* m_light_orb;
     StaticModel* m_campfire;
@@ -91,8 +92,10 @@ class Application {
     std::unique_ptr<Menu> main_menu;
     std::unordered_map<std::string, Texture2D*> m_menu_textures;
     bool m_game_in_session = false;
-
     float m_frame_rate = 0.0f;
+
+    Timer m_timer;
+    float m_delta_time_s;
 public:
     Application() : m_light_pos(1.0f, 1.0f, 2.0f) {
         // Setup
@@ -239,6 +242,7 @@ public:
 
         m_bow = new StaticModel("models/Bow.obj", m_wall_shader);
         m_sword = new StaticModel("models/Sword.obj", m_wall_shader);
+        m_level_up_orb = new StaticModel("models/Level Up Orb.obj", m_wall_shader);
 
         m_arrow = new StaticModel("models/Arrow.dae", m_wall_shader);
         m_arrow->set_scale(glm::vec3(5));
@@ -405,7 +409,6 @@ public:
 
         Globals::ptr_window = m_renderer->get_window();
 
-        Timer timer;
         float time_of_last_frame = 0;
         const float FRAME_TIME_60FPS = 1000000.0f / 60.0f;
         float base_camera_speed = 30.0f;
@@ -413,14 +416,14 @@ public:
         while (!m_renderer->is_terminated()) {
             // float delta_time = 0.001f * float(timer.GetTime()) - time_of_last_frame;
             // while (delta_time < 1000.0f / 60.0f) { delta_time = 0.001f * (float(timer.GetTime()) - time_of_last_frame); }
-            float delta_time = float(timer.GetTime()) - time_of_last_frame;
+            float delta_time = float(m_timer.GetTime()) - time_of_last_frame;
             while (delta_time < FRAME_TIME_60FPS) {
-                delta_time = float(timer.GetTime()) - time_of_last_frame;
+                delta_time = float(m_timer.GetTime()) - time_of_last_frame;
             }
-            float delta_time_s = delta_time * 0.000001f;
-            m_frame_rate = 1.0f / delta_time_s;
+            m_delta_time_s = delta_time * 0.000001f;
+            m_frame_rate = 1.0f / m_delta_time_s;
             // m_renderer->set_title(m_window_name + " | FPS: " + std::to_string(m_frame_rate));
-            time_of_last_frame = float(timer.GetTime());
+            time_of_last_frame = float(m_timer.GetTime());
 
             if (Globals::in_pause) {// testing menustd::unique_ptr<
                 m_renderer->unlock_cursor();
@@ -484,7 +487,7 @@ public:
                 }
                 player_model = m_models[reg.player.get_id()];
                 // delta_time = delta_time_s = 0.00000000001f;
-                time_of_last_frame = float(timer.GetTime());
+                time_of_last_frame = float(m_timer.GetTime());
                 _update_theme();
             }
 
@@ -552,9 +555,9 @@ public:
 
                 if (is_dodging) {
                     float portion_complete = player_model->get_portion_complete_of_curr_animation();
-                    camera_speed = portion_complete * base_camera_speed * delta_time_s;
+                    camera_speed = portion_complete * base_camera_speed * m_delta_time_s;
                 } else {
-                    camera_speed = base_camera_speed * delta_time_s;
+                    camera_speed = base_camera_speed * m_delta_time_s;
                 }
                 float amount_to_move = fmin(dist_from_desired_pos, camera_speed);
                 if (amount_to_move < 0.000001f) {
@@ -1366,13 +1369,19 @@ private:
             }
         }
 
-        // int x = 0;
-        // for (auto ewqrqf : {1,2,3,4,5,6}) {
-        //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-        //     m_bmw->set_position_x(x);
-        //     m_bmw->draw();
-        //     x += 50;
-        // }
+        int x = 0;
+        int y = 0;
+        // float z = 0.0f;
+        for (auto ewqrqf : {1}) {
+            m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+            m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
+            m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+            
+            m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+            m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
+            m_level_up_orb->draw();
+            x += 50;
+        }
         // change colour back lol
         m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
     }
@@ -1738,12 +1747,37 @@ private:
                     model->force_play_animation("Roll.dae", dodge.duration + buffer_time, false, true);
                 }
 
-                if (reg.attack_cooldowns.has(entity)) {
-                    const auto& cooldown = reg.attack_cooldowns.get(entity);
-                    if (glm::length(motion.velocity) > 0.0f) {
-                        model->play_animation("Running Attack.dae", cooldown.timer + buffer_time, false, true);
-                    } else {
-                        model->play_animation("Standing Attack.dae", cooldown.timer + buffer_time, false, true);
+                // if (reg.attack_cooldowns.has(entity)) {
+                //     const auto& cooldown = reg.attack_cooldowns.get(entity);
+                //     if (glm::length(motion.velocity) > 0.0f) {
+                //         model->play_animation("Running Attack.dae", cooldown.timer + buffer_time, false, true);
+                //     } else {
+                //         model->play_animation("Standing Attack.dae", cooldown.timer + buffer_time, false, true);
+                //     }
+                // }
+                if (reg.buildups.has(entity)) {
+                    const auto& buildup = reg.buildups.get(entity);
+                    if (reg.enemies.has(entity)) {
+                        auto& enemy = reg.enemies.get(entity);
+                        if (glm::length(motion.velocity) > 0.0f) {
+                            if (enemy.type == ENEMY_TYPE::ARCHER) {
+                                model->play_animation("Running Attack.dae", buildup.timer + 0.25f, false, true, false);
+                            } else {
+                                model->play_animation("Running Attack.dae", buildup.timer + buffer_time, false, true, false);
+                            }
+                        } else {
+                            if (enemy.type == ENEMY_TYPE::ARCHER) {
+                                model->play_animation("Standing Attack.dae", buildup.timer + 0.25f, false, true, false);
+                            } else {
+                                model->play_animation("Standing Attack.dae", buildup.timer + buffer_time, false, true, false);
+                            }
+                        }
+                    } else { 
+                        if (glm::length(motion.velocity) > 0.0f) {
+                            model->play_animation("Running Attack.dae", buildup.timer + 0.25f, false, true, false);
+                        } else {
+                            model->play_animation("Standing Attack.dae", buildup.timer + buffer_time, false, true, false);
+                        }
                     }
                 }
 
