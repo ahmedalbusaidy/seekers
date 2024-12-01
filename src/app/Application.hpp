@@ -1671,7 +1671,7 @@ private:
         float stat_spacing = m_renderer->get_window_height() / 46.08f;
         float stat_y = m_renderer->get_window_height() - stat_spacing;
         float stat_size = float(m_renderer->get_window_width()) / (2.0f * 1920.f);
-        if (reg.locomotion_stats.has(reg.player)) {
+        if (Globals::display_stats && reg.locomotion_stats.has(reg.player)) {
             auto& loco = reg.locomotion_stats.get(reg.player);
 
             font_monkey.render_text(
@@ -1730,7 +1730,7 @@ private:
         if (reg.near_interactable.is_active) {
             font_monkey.render_text(reg.near_interactable.message.c_str(), m_renderer->get_window_width() / 2.0f, m_renderer->get_window_height() / 2.0f, float(m_renderer->get_window_width()) / 1920.f, {0.95f, 0, 0});
         
-            if (reg.level_ups.has(reg.near_interactable.interactable)) {
+            if (Globals::display_stats && reg.level_ups.has(reg.near_interactable.interactable)) {
                 auto& lvl_up = reg.level_ups.get(reg.near_interactable.interactable);
                 // lvl_up.
                 stat_x *= 7.0f;
