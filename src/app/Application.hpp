@@ -526,7 +526,7 @@ public:
                     is_dodging = true;
                 }
 
-                const glm::vec3 desired_camera_pos = glm::vec3(Globals::desired_camera_positionm 3.5f);
+                const glm::vec3 desired_camera_pos = glm::vec3(Globals::desired_camera_position, 3.5f);
                 // const glm::vec3 desired_camera_pos = glm::vec3(player_motion.position - (cam_dir * 3.0f), 3.5f) + (1.2f * ortho_cam_dir);
                 glm::vec3 current_camera_position = m_camera.get_position();
                 float dist_from_desired_pos = glm::distance(desired_camera_pos, current_camera_position);
