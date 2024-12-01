@@ -1366,22 +1366,30 @@ private:
                 m_statue->set_position(glm::vec3(motion.position, 0.0f));
                 m_statue->set_rotation_z(motion.angle);
                 m_statue->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::LEVEL_UP_ORB) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+                m_level_up_orb->set_position_x(motion.position.x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
+                m_level_up_orb->set_position_y(motion.position.y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+                
+                m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+                m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
+                m_level_up_orb->draw();
             }
         }
 
-        int x = 0;
-        int y = 0;
-        // float z = 0.0f;
-        for (auto ewqrqf : {1}) {
-            m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-            m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
-            m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        // int x = 0;
+        // int y = 0;
+        // // float z = 0.0f;
+        // for (auto ewqrqf : {1}) {
+        //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
+        //     m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
+        //     m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
             
-            m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-            m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
-            m_level_up_orb->draw();
-            x += 50;
-        }
+        //     m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
+        //     m_level_up_orb->draw();
+        //     x += 50;
+        // }
         // change colour back lol
         m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
     }
@@ -1628,6 +1636,12 @@ private:
         m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
         float i = 0;
         for (const auto& estus_shit : reg.inventory.estus) {
+                
+                if (i > 5) {
+                    i = reg.inventory.estus.size();
+                    break;
+                }
+
             m_hud_health_shader->set_uniform_mat4f("u_model",
                 // Transform::create_model_matrix(
                 //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},

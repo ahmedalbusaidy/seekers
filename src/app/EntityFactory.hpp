@@ -541,7 +541,7 @@ namespace EntityFactory {
         LightSource& light_source = registry.light_sources.emplace(entity);
         light_source.pos = glm::vec3(position, 0.2f);
         light_source.brightness = 4.0f;
-        light_source.colour = glm::vec3(1.0f, 1.0f, 1.0f);
+        light_source.colour = glm::vec3(0.0f, 0.0f, 1.0f);
 
         return entity;
     }
