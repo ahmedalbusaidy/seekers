@@ -1649,13 +1649,13 @@ private:
                 //     {0.125f, 0.25f, 1}
                 // )
                 Transform::create_translation_matrix(
-                    {-1 + i++ * 0.005f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
+                    {-1 + i++ * 0.009f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
                 ) * 
                 Transform::create_scaling_matrix(
                     {1.5f*0.125f, 1.5*0.25f, 1}
                 ) *
                 Transform::create_rotation_matrix(
-                    {0, 0, PI / 16.0f + (i+1) * -PI / 32.0f}
+                    {0, 0, PI / 10.0f + (i+1) * -PI / 28.0f}
                 )
             );
             m_renderer->draw(m_square_mesh, *m_hud_health_shader);

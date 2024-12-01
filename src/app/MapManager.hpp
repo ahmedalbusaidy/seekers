@@ -20,7 +20,7 @@ public:
             auto player = EntityFactory::create_player(registry, glm::vec2(0.0f, 0.0f));
             auto weapon = EntityFactory::create_weapon(registry, glm::vec2(10.0f, 5.0f), 10.0f);
             registry.attackers.get(player).weapon = weapon;
-            registry.inventory.estus_capacity = 3;
+            registry.inventory.estus_capacity = 7;
             registry.inventory.estus_heal_amount = 120.0f;
             while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
                 Entity e = Entity();
