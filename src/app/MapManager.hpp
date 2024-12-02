@@ -36,14 +36,17 @@ public:
 
             // add dungeon entrance and bonfire here
             EntityFactory::create_bonfire(registry, glm::vec2(10.0f, 10.0f));
-            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -10.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0);
-            EntityFactory::create_portal(registry, glm::vec2(-150.0f, -100.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0, glm::vec3(0.0f,1.0f,0.0f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 0.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1, glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2, glm::vec3(0.0f,0.7f,1.0f));
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
             MapCreatorSystem::populate_open_world_map(registry);
 
-            EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
+            // EntityFactory::create_some_static(registry, glm::vec2(-10.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
+
+            // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
             // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
 
             saved_world_registry = std::make_unique<Registry>();
@@ -90,6 +93,10 @@ public:
             // Populate open world entities here
         }
         active_registry = open_world_registry.get();
+    }
+
+    void save_checkpoint() {
+        *saved_world_registry = *active_registry;
     }
 
     // checks the flags and switches the maps if necessary
@@ -140,13 +147,20 @@ private:
             floor_texture_name = "ground.jpg";
         } else if (theme == "Dungeon") {
             if (dungeon_difficulty == 0) {
+                Globals::difficulty = 0;
                 sky_texture_name = "random_skybox.png";
                 wall_texture_name = "jungle_tile_1.jpg";
                 floor_texture_name = "jungle_tile_1.jpg";
             } else if (dungeon_difficulty == 1) {
-                sky_texture_name = "SkyboxDark.png";
+                Globals::difficulty = 1;
+                sky_texture_name = "dark_night_skybox.png";
                 wall_texture_name = "tileset_1.png";
                 floor_texture_name = "tileset_7.png";
+            } else if (dungeon_difficulty == 2) {
+                Globals::difficulty = 2;
+                sky_texture_name = "SkyboxDark.png";
+                wall_texture_name = "crystal_wall.png";
+                floor_texture_name = "crystal_floor.png";
             }
         }
     }
@@ -160,13 +174,17 @@ private:
         dungeon_registry = std::make_unique<Registry>();
         active_registry = dungeon_registry.get();
         move_player_comps(*open_world_registry, *dungeon_registry);
-        int map_size;
+        int map_width;
+        int map_height;
         if (dungeon_difficulty == 0) {
-            map_size = 200;
+            map_width = map_height = 150;
         } else if (dungeon_difficulty == 1) {
-            map_size = 500;
+            map_width = map_height = 250;
+        } else if (dungeon_difficulty == 2) {
+            map_width = 200;
+            map_height = 500;
         }
-        ProceduralGenerationSystem::generate_dungeon(*dungeon_registry, map_size, map_size, dungeon_registry->motions.get(dungeon_registry->player), dungeon_difficulty);
+        ProceduralGenerationSystem::generate_dungeon(*dungeon_registry, map_width, map_height, dungeon_registry->motions.get(dungeon_registry->player), dungeon_difficulty);
         // dungeon_registry->projectile_models = open_world_registry->projectile_models;
         set_theme("Dungeon");
         Globals::restart_renderer = true;

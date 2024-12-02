@@ -57,6 +57,7 @@ class Application {
     StaticModel* m_dungeon_entrance;
     StaticModel* m_portal;
     StaticModel* m_sword;
+    StaticModel* m_fog_gate;
     StaticModel* m_bow;
     StaticModel* m_arrow;
     StaticModel* m_banana;
@@ -71,6 +72,7 @@ class Application {
     Texture2D* m_hud_health_texture_border;
     Texture2D* m_hud_health_texture_bacground;
     Texture2D* m_redbull;
+    Texture2D* m_compass_tex;
     Texture2D* m_lock_on_reticle;
     Texture2D* m_loading_tex;
     Texture2D* m_home_tex;
@@ -96,6 +98,9 @@ class Application {
 
     Timer m_timer;
     float m_delta_time_s;
+
+    bool m_has_save = false;
+
 public:
     Application() : m_light_pos(1.0f, 1.0f, 2.0f) {
         // Setup
@@ -135,6 +140,8 @@ public:
         m_menu_textures["resume"] = new Texture2D("menu/resume.png");
         m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.png");
         
+        m_compass_tex = new Texture2D("Compass.png");
+
         m_wall_shader = new Shader("StaticBlinnPhong");
         m_floor_shader = new Shader("StaticBlinnPhong");
 
@@ -176,6 +183,12 @@ public:
         m_crystal->set_pre_transform(
             Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
             Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
+        );
+
+        m_fog_gate = new StaticModel("models/Fog Gate.stl", m_wall_shader);
+        m_fog_gate->set_pre_transform(
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.6f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(0.2f, 0.2f, 0.2f))
         );
 
         // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);
@@ -324,7 +337,7 @@ public:
         hero.print_animations();
 #pragma endregion
 
-#pragma region WARRIOR
+#pragma region JUNGLE BOSS
         AnimatedModel warrok("models/Warrok/Warrok.dae", &animated_shader);
         warrok.load_animation_from_file("models/Warrok/Left.dae");
         warrok.load_animation_from_file("models/Warrok/Right.dae");
@@ -345,6 +358,98 @@ public:
         );
         warrok.print_bones();
         warrok.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL WARRIOR
+        AnimatedModel vampire("models/Vampire/Vampire.dae", &animated_shader);
+        vampire.load_animation_from_file("models/Vampire/Left.dae");
+        vampire.load_animation_from_file("models/Vampire/Right.dae");
+        vampire.load_animation_from_file("models/Vampire/Backward.dae");
+        vampire.load_animation_from_file("models/Vampire/Forward.dae");
+        vampire.load_animation_from_file("models/Vampire/Roll.dae");
+        vampire.load_animation_from_file("models/Vampire/Standing Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Running Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Dying.dae");
+        vampire.load_animation_from_file("models/Vampire/Stagger.dae");
+        vampire.load_animation_from_file("models/Vampire/Dance.dae");
+        vampire.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.02f)
+            )
+        );
+        vampire.print_bones();
+        vampire.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL RANGED
+        AnimatedModel nightshade("models/Nightshade/Nightshade.dae", &animated_shader);
+        nightshade.load_animation_from_file("models/Nightshade/Left.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Right.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Backward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Forward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Roll.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Standing Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Running Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dying.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Stagger.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dance.dae");
+        nightshade.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.02f)
+            )
+        );
+        nightshade.print_bones();
+        nightshade.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL BOSS
+        AnimatedModel mutant("models/Mutant/Mutant.dae", &animated_shader);
+        mutant.load_animation_from_file("models/Warrok/Left.dae");
+        mutant.load_animation_from_file("models/Warrok/Right.dae");
+        mutant.load_animation_from_file("models/Warrok/Backward.dae");
+        mutant.load_animation_from_file("models/Warrok/Forward.dae");
+        mutant.load_animation_from_file("models/Warrok/Roll.dae");
+        mutant.load_animation_from_file("models/Warrok/Standing Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Running Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Dying.dae");
+        mutant.load_animation_from_file("models/Warrok/Stagger.dae");
+        mutant.load_animation_from_file("models/Warrok/Dance.dae");
+        mutant.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        mutant.print_bones();
+        mutant.print_animations();
+#pragma endregion
+
+#pragma region CASTLE BOSS
+        AnimatedModel ganfaul("models/Ganfaul/Ganfaul.dae", &animated_shader);
+        ganfaul.load_animation_from_file("models/Ganfaul/Left.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Right.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Backward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Forward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Roll.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Standing Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Running Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dying.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Stagger.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dance.dae");
+        ganfaul.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.03)
+            )
+        );
+        ganfaul.print_bones();
+        ganfaul.print_animations();
 #pragma endregion
 
 #pragma region WARRIOR
@@ -506,6 +611,32 @@ public:
                         );
                     } else if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
                         m_models[entity.get_id()] = new AnimatedModel(warrok, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(mutant, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CASTLE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(ganfaul, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_WARRIOR) {
+                        m_models[entity.get_id()] = new AnimatedModel(vampire, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_ARCHER) {
+                        m_models[entity.get_id()] = new AnimatedModel(nightshade, counter++);
                         const auto& model = m_models[entity.get_id()];
                     } else {
                         m_models[entity.get_id()] = new AnimatedModel(zombie_grunt, counter++);
@@ -1120,15 +1251,32 @@ public:
     }
     
     void load() { 
-        std::cout << "Mentally cheeeecked out" << std::endl;
-        if (!m_game_in_session) {
-            m_game_in_session = true;
-            _add_resume_to_menu();
+        if (SaveLoadSystem::get_instance().load_game(MapManager::get_instance().get_active_registry())) {
+            std::cout << "Game loaded successfully" << std::endl;
+            if (!m_game_in_session) {
+                m_game_in_session = true;
+                _add_resume_to_menu();
+            }
+            unpause();  // Unpause after loading
+        } else {
+            std::cout << "No save file found or load failed" << std::endl;
         }
     }
 
     void quit() { 
         m_renderer->terminate();
+    }
+
+    void new_game() {
+        // Reset all registries and initialize new game
+        MapManager::get_instance().restart_maps();
+        MapManager::get_instance().initialize_maps();
+        
+        if (!m_game_in_session) {
+            m_game_in_session = true;
+            _add_resume_to_menu();
+        }
+        unpause();
     }
 
 private:
@@ -1263,7 +1411,7 @@ private:
         delete m_map_texture;
 
         m_skybox_texture = new SkyboxTexture(map_manager.sky_texture_name);
-        m_wall_texture = new Texture2D(map_manager.floor_texture_name);
+        m_wall_texture = new Texture2D(map_manager.wall_texture_name);
         m_map_texture = new Texture2D(map_manager.floor_texture_name);
     }
 
@@ -1386,10 +1534,10 @@ private:
                 // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
             } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
-                m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
-                m_dungeon_entrance->set_rotation_z(motion.angle);
+                m_crystal->set_position(glm::vec3(motion.position, 0.0f));
+                m_crystal->set_rotation_z(motion.angle);
                 m_crystal->draw();
-            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+            } else if (static_object.type == STATIC_OBJECT_TYPE::STATUE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
                 m_statue->set_position(glm::vec3(motion.position, 0.0f));
                 m_statue->set_rotation_z(motion.angle);
@@ -1402,6 +1550,12 @@ private:
                 m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
                 m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
                 m_level_up_orb->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::FOG_WALL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 0.75f, 0.75f, 0.75f });
+                m_fog_gate->set_position_x(motion.position.x);
+                m_fog_gate->set_position_y(motion.position.y);
+                m_fog_gate->set_rotation_z(motion.angle);
+                m_fog_gate->draw();
             }
         }
 
@@ -1410,12 +1564,11 @@ private:
         // // float z = 0.0f;
         // for (auto ewqrqf : {1}) {
         //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-        //     m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-            
-        //     m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
-        //     m_level_up_orb->draw();
+        //     m_fog_gate->set_position_x(x);
+        //     // m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_fog_gate->set_scale(glm::vec3(1.0f));
+        //     m_fog_gate->draw();
         //     x += 50;
         // }
         // change colour back lol
@@ -1435,13 +1588,16 @@ private:
             if (projectile.projectile_type == PROJECTILE_TYPE::ARROW) {
                 m_arrow->set_position(glm::vec3(motion.position, 2.0f));
                 m_arrow->set_rotation_z(motion.angle);
-                m_arrow->set_rotation_z(motion.angle);
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
                 m_wall_shader->set_uniform_3f("u_object_color", { 153.0f/255.0f, 102.0f/255.0f, 151.0f/255.0f });
                 m_arrow->draw();
+            } else if (projectile.projectile_type == PROJECTILE_TYPE::MAGIC) {
+                m_level_up_orb->set_position(glm::vec3(motion.position, 2.0f));
+                m_level_up_orb->set_rotation_z(motion.angle);
+                m_wall_shader->set_uniform_3f("u_object_color", { 100.0f/255.0f, 100.0f/255.0f, 255.0f/255.0f });
+                m_level_up_orb->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
-                m_banana->set_rotation_z(motion.angle);
                 m_banana->set_rotation_z(motion.angle);
                 m_wall_shader->set_uniform_3f("u_object_color", { 109.0f/255.0f, 170.0f/255.0f, 255.0f/255.0f });
                 m_banana->draw();
@@ -1473,8 +1629,8 @@ private:
                 );
                 continue;
             }
-            const float health_percentage = loco.health / loco.max_health;
-
+            float health_percentage = loco.health / loco.max_health;
+            if (loco.health < 0.0f) health_percentage = 0.0f;
             // Red health bar layer
             float z_index = 1.1;
             glm::vec3 health_bar_pos;
@@ -1638,6 +1794,9 @@ private:
         auto& reg = MapManager::get_instance().get_active_registry();
         auto& player_loco = reg.locomotion_stats.get(reg.player);
         float health_percentage = player_loco.health / player_loco.max_health;
+        if (player_loco.health < 0.0f) {
+            health_percentage = 0.0f;
+        }
         float energy_percentage = player_loco.energy / player_loco.max_energy;
         float size = 0.25;
 
@@ -1658,7 +1817,7 @@ private:
             {0, 0.33, 0}
         );
 
-        reg.inventory.estus.size();
+        
         m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
         m_hud_health_shader->set_uniform_1i("u_texture", m_redbull->bind(28));
         m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
@@ -1671,11 +1830,6 @@ private:
                 }
 
             m_hud_health_shader->set_uniform_mat4f("u_model",
-                // Transform::create_model_matrix(
-                //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
-                //     {0, 0, 0},
-                //     {0.125f, 0.25f, 1}
-                // )
                 Transform::create_translation_matrix(
                     {-1 + i++ * 0.009f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
                 ) * 
@@ -1750,6 +1904,27 @@ private:
                 stat_size,
                 {1,1,1}
             );
+        }
+
+        if (reg.motions.has(reg.player)) {
+            const float aspect_ratio = float(m_renderer->get_window_width()) / float(m_renderer->get_window_height());
+            auto& motion = reg.motions.get(reg.player);
+            m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
+            m_hud_health_shader->set_uniform_1i("u_texture", m_compass_tex->bind(28));
+            m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
+            m_hud_health_shader->set_uniform_mat4f("u_model",
+                Transform::create_translation_matrix(
+                    // {1 - estus_x, 1 - estus_y, 0.0f}
+                    {0.78f, 0.65f, 0.0f}
+                ) * 
+                Transform::create_scaling_matrix(
+                    {0.4f, 0.4f * aspect_ratio, 1}
+                ) *
+                Transform::create_rotation_matrix(
+                    {0, 0, PI / 2.0f - motion.angle}
+                )
+            );
+            m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
 
         _draw_tutorial();
@@ -1917,6 +2092,13 @@ private:
                     Globals::is_getting_up = false;
                 }
             } else if (reg.stagger_cooldowns.has(entity)) {
+                if (reg.player == entity) {
+                    if (reg.in_rests.has(reg.player)) {
+                        reg.in_rests.remove(reg.player);
+                    }
+                    Globals::is_getting_up = false;
+                    m_player_was_in_rest = false;
+                }
                 const auto& cooldown = reg.stagger_cooldowns.get(entity);
                 model->force_play_animation("Stagger.dae", cooldown.timer + buffer_time);
             } else if (reg.death_cooldowns.has(reg.player)) {
@@ -2025,19 +2207,7 @@ private:
         );
     }
 
-    void _init_menu() {
-        main_menu = std::make_unique<Menu>("menu/home.png");
-        main_menu->add_element(
-            std::make_unique<MyButton>(
-                &m_square_mesh,
-                glm::vec2(0, _button_height * _button_spacing * 0.0f),
-                glm::vec2(0.25f, _button_height),
-                "",
-                m_menu_textures["newgame"],
-                m_menu_textures["hover_newgame"],
-                std::bind(&Application::unpause, this)
-            )
-        );
+    void _add_load_to_menu() {
         main_menu->add_element(
             std::make_unique<MyButton>(
                 &m_square_mesh,
@@ -2049,10 +2219,36 @@ private:
                 std::bind(&Application::load, this)
             )
         );
+    }
+
+    void _init_menu() {
+        main_menu = std::make_unique<Menu>("menu/home.png");
         main_menu->add_element(
             std::make_unique<MyButton>(
                 &m_square_mesh,
-                glm::vec2(0, _button_height * _button_spacing * -2.0f),
+                glm::vec2(0, _button_height * _button_spacing * 0.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["newgame"],
+                m_menu_textures["hover_newgame"],
+                std::bind(&Application::new_game, this)
+            )
+        );
+
+        // Check if save exists and adjust quit button position accordingly
+        float quit_button_y_position;
+        if (SaveLoadSystem::get_instance().has_save()) {
+            _add_load_to_menu();  // Load button at -1.0f
+            quit_button_y_position = -2.0f;  // Quit button at bottom
+        } else {
+            quit_button_y_position = -1.0f;  // Quit button directly under New Game
+        }
+
+        // Quit button (position depends on save existence)
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * quit_button_y_position),
                 glm::vec2(0.25f, _button_height),
                 "",
                 m_menu_textures["quit"],
@@ -2063,6 +2259,13 @@ private:
     }
 
     void menu_update() {
+        // Check if save state has changed
+        bool current_save_state = SaveLoadSystem::get_instance().has_save();
+        if (current_save_state != m_has_save) {
+            m_has_save = current_save_state;
+            _refresh_menu();
+        }
+
         if (glfwGetMouseButton((GLFWwindow *)m_renderer->get_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             double mouse_x, mouse_y;
             glfwGetCursorPos((GLFWwindow *)m_renderer->get_window(), &mouse_x, &mouse_y);
@@ -2083,6 +2286,14 @@ private:
         // main_menu->update(100, 200);
 
         // m_renderer->
+    }
+
+    void _refresh_menu() {
+        main_menu = std::make_unique<Menu>("menu/home.png");
+        _init_menu();
+        if (m_game_in_session) {
+            _add_resume_to_menu();
+        }
     }
 
     //helpers

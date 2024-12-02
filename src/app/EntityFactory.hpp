@@ -103,7 +103,7 @@ namespace EntityFactory {
         Entity enemy_weapon;
         if (enemy_type == ENEMY_TYPE::ZOMBIE) {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::PUNCH);
-        } else if (enemy_type == ENEMY_TYPE::ARCHER) {
+        } else if (enemy_type == ENEMY_TYPE::ARCHER || enemy_type == ENEMY_TYPE::CAVE_ARCHER) {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::BOW);
         } else {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::SWORD);
@@ -135,6 +135,10 @@ namespace EntityFactory {
         projectile.poise_points = weapon.poise_points;
         projectile.enchantment = ENCHANTMENT::NONE;
         projectile.projectile_type = weapon.projectile_type;
+        
+        if (Globals::difficulty == 2 && projectile.projectile_type == PROJECTILE_TYPE::ARROW) {
+            projectile.projectile_type = PROJECTILE_TYPE::MAGIC;
+        }
 
         auto& team = registry.teams.emplace(entity);
         team.team_id = team_id;
@@ -335,6 +339,27 @@ namespace EntityFactory {
         return entity;
     }
 
+    inline Entity create_some_static(Registry& registry, glm::vec2 position, float angle = 0.0f, STATIC_OBJECT_TYPE type = STATIC_OBJECT_TYPE::TREE) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(4.0f, 4.0f);
+        motion.angle = angle;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::NEUTRAL;
+
+        auto& tree = registry.static_objects.emplace(entity);
+        tree.type = type;
+
+        // Use circle collider for tree
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
     inline Entity create_rock(Registry& registry, glm::vec2 position) {
         auto entity = Entity();
 
@@ -386,7 +411,7 @@ namespace EntityFactory {
     }
 
     // needs new static type
-    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0) {
+    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0, glm::vec3 colour = glm::vec3(1.0f)) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
@@ -411,13 +436,41 @@ namespace EntityFactory {
         auto entity_l1 = Entity();
         auto& light_source1 = registry.light_sources.emplace(entity_l1);
         light_source1.brightness = 5.0f;
-        light_source1.colour = glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f);
+        light_source1.colour = colour;
         light_source1.pos = glm::vec3(position.x - 0.2, position.y, 2.0f);
         auto entity_l2 = Entity();
         auto& light_source2 = registry.light_sources.emplace(entity_l2);
         light_source2.brightness = 5.0f;
-        light_source2.colour = glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f);
+        light_source2.colour = colour;
         light_source2.pos = glm::vec3(position.x + 0.2, position.y, 2.0f);
+
+        return entity;
+    }
+
+    inline Entity create_boss_entrance(Registry& registry, glm::vec2 position, float angle) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.angle = angle;
+        motion.scale = glm::vec2(1.5f);
+
+        auto& model = registry.static_objects.emplace(entity);
+        model.type = STATIC_OBJECT_TYPE::FOG_WALL;
+
+        auto& interact = registry.interactables.emplace(entity);
+        interact.entity = entity;
+        interact.range = 3.5f;
+        interact.type = INTERACTABLE_TYPE::BOSS_ENTRANCE;
+
+        // a second model to look good on both sides
+        auto entity2 = Entity();
+        auto& motion2 = registry.motions.emplace(entity2);
+        motion2.position = position;
+        motion2.angle = angle + PI;
+        motion2.scale = glm::vec2(1.5f);
+        auto& model2 = registry.static_objects.emplace(entity2);
+        model2.type = STATIC_OBJECT_TYPE::FOG_WALL;
 
         return entity;
     }
@@ -499,7 +552,7 @@ namespace EntityFactory {
 
 
         auto& enemy = registry.enemies.emplace(entity);
-        enemy.type = ENEMY_TYPE::JUNGLE_BOSS;
+        enemy.type = ENEMY_TYPE::CASTLE_BOSS;
 
         Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
         attacker.weapon = enemy_weapon;
@@ -567,6 +620,165 @@ namespace EntityFactory {
         float g = (floats.at(2) - floats.at(0)) + (floats.at(5) - floats.at(4));
         float b = 1.0f - floats.at(5);
         light_source.colour = glm::vec3(r, g, b);
+
+        return entity;
+    }
+
+    inline Entity create_jungle_boss(Registry& registry, glm::vec2 position) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
+
+        auto& locomotion = registry.locomotion_stats.emplace(entity);
+        locomotion.max_health = 100.0f;
+        locomotion.health = locomotion.max_health;
+        locomotion.max_energy = 1000.0f;
+        locomotion.energy = locomotion.max_energy;
+        locomotion.max_poise = 1000.0f;
+        locomotion.poise = locomotion.max_poise;
+        locomotion.movement_speed = 12.0f;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::FOW;
+
+        auto& attacker = registry.attackers.emplace(entity);
+
+        // COMBOS
+        BossAI& ai = registry.boss_ais.emplace(entity);
+        ai.dodge_ratio = 0.0f;
+        ai.attack_range = 6.5f;
+        AttackCombo combo1 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::REGULAR}),
+            {0.0f, 0.5f, 0.3f}
+        };
+        AttackCombo combo2 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::AOE, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.5f, 0.4f}
+        };
+        AttackCombo combo3 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.1f, 0.7f}
+        };
+        ai.combos = {combo1, combo2, combo3};
+
+
+        auto& enemy = registry.enemies.emplace(entity);
+        enemy.type = ENEMY_TYPE::JUNGLE_BOSS;
+
+        Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
+        attacker.weapon = enemy_weapon;
+
+        // Use circle collider for enemy
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
+    inline Entity create_castle_boss(Registry& registry, glm::vec2 position) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
+
+        auto& locomotion = registry.locomotion_stats.emplace(entity);
+        locomotion.max_health = 100.0f;
+        locomotion.health = locomotion.max_health;
+        locomotion.max_energy = 1000.0f;
+        locomotion.energy = locomotion.max_energy;
+        locomotion.max_poise = 1000.0f;
+        locomotion.poise = locomotion.max_poise;
+        locomotion.movement_speed = 12.0f;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::FOW;
+
+        auto& attacker = registry.attackers.emplace(entity);
+
+        // COMBOS
+        BossAI& ai = registry.boss_ais.emplace(entity);
+        ai.dodge_ratio = 0.5f;
+        ai.attack_range = 6.5f;
+        AttackCombo combo1 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::REGULAR}),
+            {0.0f, 0.5f, 0.3f}
+        };
+        AttackCombo combo2 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::AOE, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.5f, 0.4f}
+        };
+        AttackCombo combo3 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.1f, 0.7f}
+        };
+        ai.combos = {combo1, combo2, combo3};
+
+
+        auto& enemy = registry.enemies.emplace(entity);
+        enemy.type = ENEMY_TYPE::CASTLE_BOSS;
+
+        Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
+        attacker.weapon = enemy_weapon;
+
+        // Use circle collider for enemy
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
+    inline Entity create_cave_boss(Registry& registry, glm::vec2 position) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
+
+        auto& locomotion = registry.locomotion_stats.emplace(entity);
+        locomotion.max_health = 100.0f;
+        locomotion.health = locomotion.max_health;
+        locomotion.max_energy = 1000.0f;
+        locomotion.energy = locomotion.max_energy;
+        locomotion.max_poise = 1000.0f;
+        locomotion.poise = locomotion.max_poise;
+        locomotion.movement_speed = 12.0f;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::FOW;
+
+        auto& attacker = registry.attackers.emplace(entity);
+
+        // COMBOS
+        BossAI& ai = registry.boss_ais.emplace(entity);
+        ai.dodge_ratio = 0.8f;
+        ai.attack_range = 6.5f;
+        AttackCombo combo1 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::REGULAR}),
+            {0.0f, 0.5f, 0.3f}
+        };
+        AttackCombo combo2 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::AOE, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.5f, 0.4f}
+        };
+        AttackCombo combo3 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.1f, 0.7f}
+        };
+        ai.combos = {combo1, combo2, combo3};
+
+
+        auto& enemy = registry.enemies.emplace(entity);
+        enemy.type = ENEMY_TYPE::CAVE_BOSS;
+
+        Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
+        attacker.weapon = enemy_weapon;
+
+        // Use circle collider for enemy
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
 
         return entity;
     }

@@ -49,7 +49,7 @@ struct AttackCombo {
 
 struct BossAI {
     BOSS_STATE state = BOSS_STATE::COOLDOWN;
-    float cooldown_delay_counter = 0.2f;// cooldown counter between combos (switch from cooldown state to chase/in_combo)
+    float cooldown_delay_counter = 0.5f;// cooldown counter between combos (switch from cooldown state to chase/in_combo)
     float dodge_ratio = 0.0f;           // between 0 and 1 for the percentage of attacks dodged by boss
     std::vector<AttackCombo> combos;
     std::vector<float> q;               // reward (damage dealt - damage received) list of combos for Q-learning (same size as combos list)
