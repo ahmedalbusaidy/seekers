@@ -347,6 +347,52 @@ public:
         warrok.print_animations();
 #pragma endregion
 
+#pragma region CRYSTAL WARRIOR
+        AnimatedModel vampire("models/Vampire/Vampire.dae", &animated_shader);
+        vampire.load_animation_from_file("models/Vampire/Left.dae");
+        vampire.load_animation_from_file("models/Vampire/Right.dae");
+        vampire.load_animation_from_file("models/Vampire/Backward.dae");
+        vampire.load_animation_from_file("models/Vampire/Forward.dae");
+        vampire.load_animation_from_file("models/Vampire/Roll.dae");
+        vampire.load_animation_from_file("models/Vampire/Standing Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Running Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Dying.dae");
+        vampire.load_animation_from_file("models/Vampire/Stagger.dae");
+        vampire.load_animation_from_file("models/Vampire/Dance.dae");
+        vampire.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        vampire.print_bones();
+        vampire.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL RANGED
+        AnimatedModel nightshade("models/Nightshade/Nightshade.dae", &animated_shader);
+        nightshade.load_animation_from_file("models/Nightshade/Left.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Right.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Backward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Forward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Roll.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Standing Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Running Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dying.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Stagger.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dance.dae");
+        nightshade.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        nightshade.print_bones();
+        nightshade.print_animations();
+#pragma endregion
+
 #pragma region CRYSTAL BOSS
         AnimatedModel mutant("models/Mutant/Mutant.dae", &animated_shader);
         mutant.load_animation_from_file("models/Warrok/Left.dae");
@@ -368,6 +414,29 @@ public:
         );
         mutant.print_bones();
         mutant.print_animations();
+#pragma endregion
+
+#pragma region CASTLE BOSS
+        AnimatedModel ganfaul("models/Ganfaul/Ganfaul.dae", &animated_shader);
+        ganfaul.load_animation_from_file("models/Ganfaul/Left.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Right.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Backward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Forward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Roll.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Standing Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Running Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dying.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Stagger.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dance.dae");
+        ganfaul.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.03)
+            )
+        );
+        ganfaul.print_bones();
+        ganfaul.print_animations();
 #pragma endregion
 
 #pragma region WARRIOR
@@ -532,6 +601,29 @@ public:
                         const auto& model = m_models[entity.get_id()];
                     } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
                         m_models[entity.get_id()] = new AnimatedModel(mutant, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CASTLE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(ganfaul, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_WARRIOR) {
+                        m_models[entity.get_id()] = new AnimatedModel(vampire, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_ARCHER) {
+                        m_models[entity.get_id()] = new AnimatedModel(nightshade, counter++);
                         const auto& model = m_models[entity.get_id()];
                     } else {
                         m_models[entity.get_id()] = new AnimatedModel(zombie_grunt, counter++);
