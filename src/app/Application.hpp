@@ -1534,8 +1534,8 @@ private:
                 // m_wall_shader->set_uniform_3f("u_object_color", { 0.5, 0.2, 1 });
             } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 0.0f, 1.0f, 1.0f });
-                m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
-                m_dungeon_entrance->set_rotation_z(motion.angle);
+                m_crystal->set_position(glm::vec3(motion.position, 0.0f));
+                m_crystal->set_rotation_z(motion.angle);
                 m_crystal->draw();
             } else if (static_object.type == STATIC_OBJECT_TYPE::STATUE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
