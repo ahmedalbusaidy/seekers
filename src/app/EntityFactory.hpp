@@ -55,7 +55,7 @@ namespace EntityFactory {
         } else {
             weapon.range = 5.0f;
         }
-        weapon.proj_speed = 80.0f;
+        weapon.proj_speed = 50.0f;
         weapon.attack_cooldown = attack_cooldown;
         weapon.stagger_duration = 0.5f;
         weapon.poise_points = 10.0f;
@@ -117,7 +117,7 @@ namespace EntityFactory {
         return entity;
     }
 
-    inline Entity create_projectile(Registry& registry, Motion& attacker_motion, Attacker& attacker, Weapon& weapon, TEAM_ID team_id) {
+    inline Entity create_projectile(Registry& registry, Motion& attacker_motion, Attacker& attacker, Weapon& weapon, TEAM_ID team_id, float power = 0.0f) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
@@ -129,7 +129,7 @@ namespace EntityFactory {
         motion.scale = glm::vec2(1.0f, 1.0f);  // Projectile size
 
         auto& projectile = registry.projectiles.emplace(entity);
-        projectile.damage = weapon.damage;
+        projectile.damage = weapon.damage + power * 0.01f * weapon.damage;
         projectile.range_remaining = weapon.range;
         projectile.stagger_duration = weapon.stagger_duration;
         projectile.poise_points = weapon.poise_points;
@@ -430,5 +430,144 @@ namespace EntityFactory {
         light_source.colour = colour;
         light_source.type = type;
         return e;
+    }
+
+    inline Entity create_boss_projectile(Registry& registry, glm::vec2 pos, float angle, glm::vec2 aim, Weapon& weapon) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = pos;
+        motion.angle = angle;
+        motion.velocity = aim * weapon.proj_speed;
+        motion.scale = glm::vec2(1.0f, 1.0f);  // Projectile size
+
+        auto& projectile = registry.projectiles.emplace(entity);
+        projectile.damage = weapon.damage;
+        projectile.range_remaining = weapon.range;
+        projectile.stagger_duration = weapon.stagger_duration;
+        projectile.poise_points = weapon.poise_points;
+        projectile.enchantment = ENCHANTMENT::NONE;
+        projectile.projectile_type = weapon.projectile_type;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::FOW;
+
+        registry.collision_bounds.emplace(entity,
+                CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
+    inline Entity create_test_boss(Registry& registry, glm::vec2 position) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
+
+        auto& locomotion = registry.locomotion_stats.emplace(entity);
+        locomotion.max_health = 100.0f;
+        locomotion.health = locomotion.max_health;
+        locomotion.max_energy = 1000.0f;
+        locomotion.energy = locomotion.max_energy;
+        locomotion.max_poise = 1000.0f;
+        locomotion.poise = locomotion.max_poise;
+        locomotion.movement_speed = 12.0f;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::FOW;
+
+        auto& attacker = registry.attackers.emplace(entity);
+
+        // COMBOS
+        BossAI& ai = registry.boss_ais.emplace(entity);
+        ai.dodge_ratio = 1.0f;
+        ai.attack_range = 6.5f;
+        AttackCombo combo1 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::REGULAR}),
+            {0.0f, 0.5f, 0.3f}
+        };
+        AttackCombo combo2 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::AOE, BOSS_ATTACK_TYPE::LONG, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.5f, 0.4f}
+        };
+        AttackCombo combo3 = {
+            std::vector<BOSS_ATTACK_TYPE>({BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::REGULAR, BOSS_ATTACK_TYPE::AOE}),
+            {0.0f, 0.1f, 0.7f}
+        };
+        ai.combos = {combo1, combo2, combo3};
+
+
+        auto& enemy = registry.enemies.emplace(entity);
+        enemy.type = ENEMY_TYPE::JUNGLE_BOSS;
+
+        Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
+        attacker.weapon = enemy_weapon;
+
+        // Use circle collider for enemy
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
+    inline Entity create_level_up_orb(Registry& registry, glm::vec2 position, int level) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(1.0f);
+
+        auto& obj = registry.static_objects.emplace(entity);
+        obj.type = STATIC_OBJECT_TYPE::LEVEL_UP_ORB;
+
+        auto& interact = registry.interactables.emplace(entity);
+        interact.entity = entity;
+        interact.range = 5.0f;
+        interact.type = INTERACTABLE_TYPE::ITEM_PICKUP;
+
+        // randomize level up amount
+        float total_points = 0.0f;
+        if (level == 0) {
+            total_points = 100.0f;
+        } else if (level == 1) {
+            total_points = 200.0f;
+        } else if (level == 2) {
+            total_points = 300.0f;
+        }
+        std::mt19937 gen(std::random_device{}());
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        std::vector<float> floats;
+        floats.resize(7);
+        for (auto& f : floats) f = dist(gen);
+        std::sort(floats.begin(), floats.end());
+        float health_points = floats.at(0) * total_points;
+        float energy_points = (floats.at(1) - floats.at(0)) * total_points / 3.0f;
+        float poise_points = (floats.at(2) - floats.at(1)) * total_points / 6.0f;
+        float defense_points = (floats.at(3) - floats.at(2)) * total_points / 8.0f;
+        float power_points = (floats.at(4) - floats.at(3)) * total_points / 8.0f;
+        float agility_points = (floats.at(5) - floats.at(4)) * total_points / 8.0f;
+        int estus_num = int((floats.at(6) - floats.at(5)) * total_points / 70.0f);
+        float estus_heal = (1.0f - floats.at(6)) * total_points / 2.0f;
+
+        auto& level_up = registry.level_ups.emplace(entity);
+        level_up.health = health_points;
+        level_up.energy = energy_points;
+        level_up.poise = poise_points;
+        level_up.defense = defense_points;
+        level_up.power = power_points;
+        level_up.agility = agility_points;
+        level_up.estus_num = estus_num;
+        level_up.estus_heal = estus_heal;
+
+        LightSource& light_source = registry.light_sources.emplace(entity);
+        light_source.pos = glm::vec3(position, 3.0f);
+        light_source.brightness = 4.0f * total_points / 300.0f;
+        float r = floats.at(0) + (floats.at(4) - floats.at(2));
+        float g = (floats.at(2) - floats.at(0)) + (floats.at(5) - floats.at(4));
+        float b = 1.0f - floats.at(5);
+        light_source.colour = glm::vec3(r, g, b);
+
+        return entity;
     }
 };

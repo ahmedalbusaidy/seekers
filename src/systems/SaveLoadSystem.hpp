@@ -5,6 +5,7 @@
 #include <ctime>
 #include <sys/stat.h>
 #include "app/MapManager.hpp"
+#include "utils/MapManagerSerializer.hpp"
 
 #ifdef _WIN32
     #include <direct.h>
@@ -45,14 +46,12 @@ public:
 
     bool save_game_to_slot(const SaveSlot& slot) {
         try {
-            auto& map_manager = MapManager::get_instance();
-
             json save_data;
             save_data["version"] = slot.version;
             save_data["timestamp"] = slot.timestamp;
             
-            auto& registry = map_manager.get_active_registry();
-            save_data["registry"] = RegistrySerializer::serialize_registry(registry);
+            // Save MapManager state using the serializer
+            save_data["map_manager"] = MapManagerSerializer::serialize_map_manager(MapManager::get_instance());
             
             #ifdef _WIN32
                 _mkdir("saves");
@@ -79,7 +78,7 @@ public:
 
             json save_data = json::parse(file);
             
-            if (!save_data.contains("registry") || 
+            if (!save_data.contains("map_manager") || 
                 !save_data.contains("version") || 
                 !save_data.contains("timestamp")) {
                 throw SerializationError("Invalid save file format");
@@ -90,11 +89,8 @@ public:
                 Log::log_warning("Save version mismatch", __FILE__, __LINE__);
             }
             
-            auto& map_manager = MapManager::get_instance();
-            map_manager.restart_maps();
-            
-            auto& registry = map_manager.get_active_registry();
-            RegistrySerializer::deserialize_registry(registry, save_data["registry"]);
+            // Deserialize MapManager state using the serializer
+            MapManagerSerializer::deserialize_map_manager(MapManager::get_instance(), save_data["map_manager"]);
             
             return true;
         } catch (const std::exception& e) {

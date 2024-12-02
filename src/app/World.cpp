@@ -8,6 +8,7 @@
 #include "systems/PhysicsSystem.hpp"
 #include "systems/InteractionSystem.hpp"
 #include "systems/GridMapSystem.hpp"
+#include "systems/CameraSystem.hpp"
 #include "systems/AudioSystem.hpp"
 
 #include "systems/AISystem.hpp"
@@ -154,6 +155,7 @@ void World::step(float elapsed_ms) {
     m_audioSystem.handle_audio_per_frame();
 
     AISystem::AI_step();
+    AISystem::boss_AI_step(elapsed_ms); // conditional this for with in_boss_fight flag
 
     InputManager::handle_inputs_per_frame();
 
@@ -163,6 +165,8 @@ void World::step(float elapsed_ms) {
     GameplaySystem::update_regen_stats(elapsed_ms);
     GameplaySystem::update_projectile_range(elapsed_ms);
     GameplaySystem::update_near_player_camera();
+
+    CameraSystem::update_desired_camera_position();
 
     enforce_boundaries(MapManager::get_instance().get_active_registry().player);
 

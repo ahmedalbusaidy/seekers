@@ -6,6 +6,10 @@
 #include <app/EntityFactory.hpp>
 
 namespace GameplaySystem {
+    // in order to use in update_cooldowns
+    inline void truly_attack(Entity& e, bool from_boss = false, BOSS_ATTACK_TYPE attack_type = BOSS_ATTACK_TYPE::REGULAR);
+    inline void truly_consume_estus();
+
     inline void update_cooldowns(float elapsed_ms) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
@@ -64,6 +68,29 @@ namespace GameplaySystem {
                 return;
             }
             registry.remove_all_components_of(e);
+        }
+
+        to_be_removed.clear();
+        to_be_removed.reserve(registry.buildups.entities.size());
+        for (Entity& e : registry.buildups.entities) {
+            auto& buildup = registry.buildups.get(e);
+            buildup.timer -= elapsed_ms / 1000.0f;
+            if (buildup.timer <= 0) {
+                to_be_removed.push_back(e);
+                truly_attack(e, buildup.from_boss, buildup.attack_type);
+            }
+        }
+        for (Entity& e : to_be_removed) {
+            registry.buildups.remove(e);
+        }
+
+        if (registry.estus_cooldowns.has(registry.player)) {
+            auto& estus_cooldown = registry.estus_cooldowns.get(registry.player);
+            estus_cooldown.timer -= elapsed_ms / 1000.0f;
+            if (estus_cooldown.timer <= 0) {
+                registry.estus_cooldowns.remove(registry.player);
+                truly_consume_estus();
+            }
         }
     }
 
@@ -147,48 +174,42 @@ namespace GameplaySystem {
         }
     }
 
-    inline void attack(Entity& e) {
+    inline bool attack(Entity& e, float buildup_duration = 0.3f, bool from_boss = false, BOSS_ATTACK_TYPE attack_type = BOSS_ATTACK_TYPE::REGULAR) {
         Registry& registry = MapManager::get_instance().get_active_registry();
-        AudioSystem& audio = AudioSystem::get_instance();
 
-        LocomotionStats& locomotion = registry.locomotion_stats.get(e);
+        if (registry.attack_cooldowns.has(e) || registry.buildups.has(e) ||
+            registry.stagger_cooldowns.has(e) || registry.death_cooldowns.has(e) ||
+            registry.locomotion_stats.get(e).energy <= 0 || registry.estus_cooldowns.has(e)) return false;
 
-        if (registry.attack_cooldowns.has(e) || registry.stagger_cooldowns.has(e) || registry.death_cooldowns.has(e) || locomotion.energy <= 0) return;
+        AttackBuildup& buildup = registry.buildups.emplace(e);
+        buildup.timer = buildup_duration;
+        buildup.from_boss = from_boss;
+        buildup.attack_type = attack_type;
 
-        Motion& motion = registry.motions.get(e);
-        Attacker& attacker = registry.attackers.get(e);
-        Weapon& weapon = registry.weapons.get(attacker.weapon);
-
-        EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id);
-        registry.attack_cooldowns.emplace(e, weapon.attack_cooldown);
-        deplete_energy(e, weapon.attack_energy_cost);
-
-        float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
-        if (weapon.type == WEAPON_TYPE::BOW) {
-            audio.play_attack_bow(distance_from_camera);
-        } else {
-            audio.play_attack_sword(distance_from_camera);
-        }
+        return true;
     }
 
     inline void dodge(Entity& e) {
         Registry& registry = MapManager::get_instance().get_active_registry();
         AudioSystem& audio = AudioSystem::get_instance();
 
-        LocomotionStats& locomotion = registry.locomotion_stats.get(e);
-
-        if (registry.in_dodges.has(e) || locomotion.energy <= 0) return;
+        if (registry.in_dodges.has(e) || registry.locomotion_stats.get(e).energy <= 0 ||
+            registry.death_cooldowns.has(e) || registry.stagger_cooldowns.has(e)) return;
 
         Motion& motion = registry.motions.get(e);
 
         glm::vec2 dodge_target_pos;
         if (glm::length(motion.velocity) < 0.00001) {
             dodge_target_pos = motion.position + -glm::vec2(cos(motion.angle), sin(motion.angle)) * Globals::dodgeMoveMag;
+            motion.velocity = -glm::vec2(cos(motion.angle), sin(motion.angle)); // to play the animation in the correct direction
         } else {
             dodge_target_pos = motion.position + Common::normalize(motion.velocity) * Globals::dodgeMoveMag;
         }
         registry.in_dodges.emplace(e, motion.position, dodge_target_pos, Globals::timer.GetTime(), Globals::dodgeDuration);
         deplete_energy(e, Globals::dodge_energy_cost);
+
+        registry.buildups.remove(e);
+        if (e == registry.player) registry.estus_cooldowns.remove(e);
 
         float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
         audio.play_dodge(distance_from_camera);
@@ -198,7 +219,15 @@ namespace GameplaySystem {
         Registry& registry = MapManager::get_instance().get_active_registry();
         std::vector<Entity>& esti = registry.inventory.estus;
 
-        if (esti.size() <= 0 || registry.attack_cooldowns.has(registry.player) || registry.stagger_cooldowns.has(registry.player) || registry.death_cooldowns.has(registry.player)) return;
+        if (esti.size() <= 0 || registry.attack_cooldowns.has(registry.player) || registry.stagger_cooldowns.has(registry.player) ||
+            registry.death_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) return;
+
+        registry.estus_cooldowns.emplace(registry.player, 1.0f);
+    }
+
+    inline void truly_consume_estus() {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        std::vector<Entity>& esti = registry.inventory.estus;
 
         LocomotionStats& loco =  registry.locomotion_stats.get(registry.player);
         loco.health = fmin(loco.health + registry.estus.get(esti[0]).heal_amount, loco.max_health);
@@ -219,11 +248,11 @@ namespace GameplaySystem {
         loco.health = loco.max_health;
         loco.energy = loco.max_energy;
         loco.poise = loco.max_poise;
-        while (registry.inventory.estus.size() < 3) {
+        while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
             Entity e = Entity();
             registry.inventory.estus.push_back(e);
             auto& estus = registry.estus.emplace(e);
-            estus.heal_amount = 120.0f;
+            estus.heal_amount = registry.inventory.estus_heal_amount;
         }
 
         registry.input_state.w_down = false;
@@ -289,5 +318,71 @@ namespace GameplaySystem {
         if (min_angle == std::numeric_limits<float>::max()) { // no target was found to lock on
             registry.locked_target.is_active = false;
         }
+    }
+
+    inline void boss_attack(Entity& e, Motion& motion, Attacker& attacker, Weapon& weapon, BOSS_ATTACK_TYPE type) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+
+        if (type == BOSS_ATTACK_TYPE::REGULAR) {
+            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon);
+            registry.attack_cooldowns.emplace(e, 0.3f);
+        } else if (type == BOSS_ATTACK_TYPE::LONG) {
+            glm::vec2 pos0 = glm::vec2(motion.position.x - cos(motion.angle), motion.position.y - sin(motion.angle));
+            glm::vec2 pos2 = glm::vec2(motion.position.x + cos(motion.angle), motion.position.y + sin(motion.angle));
+            EntityFactory::create_boss_projectile(registry, pos0, motion.angle, attacker.aim, weapon);
+            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon);
+            EntityFactory::create_boss_projectile(registry, pos2, motion.angle, attacker.aim, weapon);
+            registry.attack_cooldowns.emplace(e, 0.5f);
+        } else if (type == BOSS_ATTACK_TYPE::AOE) {
+            for (int i = 0; i < 8; i++) {
+                float angle = motion.angle + i * PI / 4;
+                glm::vec2 aim = glm::vec2(cos(angle), sin(angle));
+                EntityFactory::create_boss_projectile(registry, motion.position, angle, aim, weapon);
+            }
+            registry.attack_cooldowns.emplace(e, 0.5f);
+        }
+
+        // deplete_energy(e, weapon.attack_energy_cost);    *** commented out so this doesn't interfere and complicate combo executions
+    }
+
+    // "truly" haha, get it?
+    inline void truly_attack(Entity& e, bool from_boss, BOSS_ATTACK_TYPE attack_type) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        AudioSystem& audio = AudioSystem::get_instance();
+
+        // was staggered or killed mid buildup
+        if (registry.stagger_cooldowns.has(e) || registry.death_cooldowns.has(e) || !registry.valid(e)) return;
+
+        Motion& motion = registry.motions.get(e);
+        Attacker& attacker = registry.attackers.get(e);
+        Weapon& weapon = registry.weapons.get(attacker.weapon);
+
+        if (from_boss) {
+            boss_attack(e, motion, attacker, weapon, attack_type);
+        } else {
+            EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id, registry.locomotion_stats.get(e).power);
+            registry.attack_cooldowns.emplace(e, weapon.attack_cooldown);
+            deplete_energy(e, weapon.attack_energy_cost);
+        }
+
+        float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
+        if (weapon.type == WEAPON_TYPE::BOW) {
+            audio.play_attack_bow(distance_from_camera);
+        } else {
+            audio.play_attack_sword(distance_from_camera);
+        }
+    }
+
+    inline void consume_level_orb(LevelUp& level_up) {
+        Registry& registry = MapManager::get_instance().get_active_registry();
+        LocomotionStats& player_loco = registry.locomotion_stats.get(registry.player);
+        player_loco.max_health += level_up.health;
+        player_loco.max_energy += level_up.energy;
+        player_loco.max_poise += level_up.poise;
+        player_loco.defense += level_up.defense;
+        player_loco.power += level_up.power;
+        player_loco.agility += level_up.agility;
+        registry.inventory.estus_capacity += level_up.estus_num;
+        registry.inventory.estus_heal_amount += level_up.estus_heal;
     }
 };

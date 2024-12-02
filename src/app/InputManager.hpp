@@ -17,6 +17,25 @@ namespace InputManager {
         Registry& registry = MapManager::get_instance().get_active_registry();
         Motion& player_motion = registry.motions.get(registry.player);
 
+        if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+            Globals::in_pause = !Globals::in_pause;
+            auto& instance = AudioSystem::get_instance();
+            instance.stop_footstep();
+        }
+
+        if (Globals::in_pause) {
+            registry.input_state.a_down = false;
+            registry.input_state.w_down = false;
+            registry.input_state.d_down = false;
+            registry.input_state.s_down = false;
+            Globals::after_pause = true;
+            return;
+        }
+
+        if (action == GLFW_PRESS && key == GLFW_KEY_H) {
+            Globals::display_stats = !Globals::display_stats;
+        }
+
         if (Globals::is_getting_up) return;
 
         if (action == GLFW_PRESS && key == GLFW_KEY_F) {
@@ -62,12 +81,12 @@ namespace InputManager {
                 GameplaySystem::consume_estus();
             }
 
-            // if (key == GLFW_KEY_G) {
-            //     MapManager::get_instance().enter_dungeon_flag = true;
-            // }
-            // if (key == GLFW_KEY_R) {
-            //     MapManager::get_instance().return_open_world_flag = true;
-            // }
+            if (key == GLFW_KEY_G) {
+                MapManager::get_instance().enter_spire_flag = true;
+            }
+            if (key == GLFW_KEY_R) {
+                MapManager::get_instance().return_open_world_flag = true;
+            }
 
             if (key == GLFW_KEY_F5) {
                 // Simple save with timestamp as name
@@ -108,6 +127,12 @@ namespace InputManager {
                 }
             }
 
+            if (key == GLFW_KEY_F12) {
+                // spawn level 2 orbs
+                glm::vec2 pos = glm::vec2(player_motion.position.x + cos(player_motion.angle), player_motion.position.y + sin(player_motion.angle));
+                EntityFactory::create_level_up_orb(registry, pos, 2);
+            }
+
             // if (key == GLFW_KEY_G) {
             //     MapManager::get_instance().enter_dungeon_flag = true;
             // }
@@ -140,7 +165,7 @@ namespace InputManager {
     inline void on_mouse_button_pressed(GLFWwindow* window, int button, int action, int mods) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
-        if (Globals::is_getting_up || registry.in_rests.has(registry.player)) return;
+        if (Globals::is_getting_up || registry.in_rests.has(registry.player) || Globals::in_pause) return;
 
         Attacker& player_attacker = registry.attackers.get(registry.player);
         Weapon& weapon_stats = registry.weapons.get(player_attacker.weapon);
@@ -160,7 +185,12 @@ namespace InputManager {
     inline void on_mouse_move(GLFWwindow* window, double x, double y) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
-        if (Globals::is_getting_up || registry.in_rests.has(registry.player)) return;
+        if (Globals::is_getting_up || registry.in_rests.has(registry.player) || Globals::in_pause) return;
+
+        if (Globals::after_pause) {
+            glfwSetCursorPos(window, registry.input_state.mouse_pos.x, WINDOW_HEIGHT - registry.input_state.mouse_pos.y);
+            Globals::after_pause = false;
+        }
 
         if (Globals::is_3d_mode) {
             if (!registry.death_cooldowns.has(registry.player)) {
@@ -194,10 +224,12 @@ namespace InputManager {
         move_dir = Common::normalize(move_dir);
         move_dir *= player_stats.movement_speed;
         glm::vec4 temp = Transform::create_rotation_matrix({ 0, 0, player_motion.angle }) * glm::vec4(move_dir, 0, 1);
-        if (!registry.stagger_cooldowns.has(registry.player)) {
-            player_motion.velocity = { temp.x, temp.y };
-        } else {
-            player_motion.velocity = 0.25f * glm::vec2(temp.x, temp.y);
+        if (!registry.in_dodges.has(registry.player)) {
+            if (registry.stagger_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) {
+                player_motion.velocity = 0.25f * glm::vec2(temp.x, temp.y);
+            } else {
+                player_motion.velocity = { temp.x, temp.y };
+            }
         }
 
         if (registry.locked_target.is_active) {

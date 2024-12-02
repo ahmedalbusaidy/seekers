@@ -2,10 +2,15 @@
 
 #include "ecs/Registry.hpp"
 #include "systems/ProceduralGenerationSystem.hpp"
-#include "systems/OpenWorldMapCreatorSystem.hpp"
+#include "systems/MapCreatorSystem.hpp"
+
+// Forward declare MapManagerSerializer
+class MapManagerSerializer;
 
 class MapManager {
 public:
+    friend class MapManagerSerializer;  // Give access to MapManagerSerializer
+
     static MapManager& get_instance() {
         static MapManager instance;
         return instance;
@@ -20,11 +25,13 @@ public:
             auto player = EntityFactory::create_player(registry, glm::vec2(0.0f, 0.0f));
             auto weapon = EntityFactory::create_weapon(registry, glm::vec2(10.0f, 5.0f), 10.0f);
             registry.attackers.get(player).weapon = weapon;
-            while (registry.inventory.estus.size() < 3) {
+            registry.inventory.estus_capacity = 7;
+            registry.inventory.estus_heal_amount = 120.0f;
+            while (registry.inventory.estus.size() < registry.inventory.estus_capacity) {
                 Entity e = Entity();
                 registry.inventory.estus.push_back(e);
                 auto& estus = registry.estus.emplace(e);
-                estus.heal_amount = 120.0f;
+                estus.heal_amount = registry.inventory.estus_heal_amount;
             }
 
             // add dungeon entrance and bonfire here
@@ -34,7 +41,10 @@ public:
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
-            OpenWorldMapCreatorSystem::populate_open_world_map(registry);
+            MapCreatorSystem::populate_open_world_map(registry);
+
+            EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
+            // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
 
             saved_world_registry = std::make_unique<Registry>();
             *saved_world_registry = *open_world_registry;
@@ -54,6 +64,9 @@ public:
         //     // Populate spire3 entities here (player should not be added, just the level)
         // }
         active_registry = open_world_registry.get();
+
+        spire_registry = std::make_unique<Registry>();
+        MapCreatorSystem::populate_spire_map(*spire_registry);
     }
 
     // Called on respawns (ie. player death)
@@ -93,6 +106,12 @@ public:
                 return;
             }
             enter_dungeon();
+        } else if (enter_spire_flag) {
+            if (active_registry == spire_registry.get()) {
+                std::cout << "Already in dungeon. Enter operation is illegal." << std::endl;
+                return;
+            }
+            enter_spire();
         }
     }
 
@@ -103,9 +122,7 @@ public:
     bool return_open_world_flag = false;
     bool enter_dungeon_flag = false;
     int dungeon_difficulty;
-    // bool enter_spire_one_flag = false;
-    // bool enter_spire_two_flag = false;
-    // bool enter_spire_three_flag = false;
+    bool enter_spire_flag = false;
 
     std::string sky_texture_name;
     std::string wall_texture_name;
@@ -155,28 +172,50 @@ private:
         Globals::restart_renderer = true;
     }
 
+    void enter_spire() {
+        if (Globals::show_loading_screen) {
+            Globals::show_loading_screen = false;
+            return;
+        }
+        enter_spire_flag = false;
+        active_registry = spire_registry.get();
+        move_player_comps(*open_world_registry, *spire_registry);
+        // spire_registry->projectile_models = open_world_registry->projectile_models;
+        set_theme("OpenWorld"); // TODO: change this to spire theme
+        Globals::restart_renderer = true;
+    }
+
     void return_to_world() {
         if (Globals::show_loading_screen) {
             Globals::show_loading_screen = false;
             return;
         }
         return_open_world_flag = false;
-        active_registry = open_world_registry.get();
         Motion player_motion_copy = open_world_registry->motions.get(open_world_registry->player);
-        move_player_comps(*dungeon_registry, *open_world_registry);
+        if (active_registry == dungeon_registry.get()) {
+            move_player_comps(*dungeon_registry, *open_world_registry);
+        } else {
+            move_player_comps(*spire_registry, *open_world_registry);
+        }
         open_world_registry->motions.get(open_world_registry->player) = player_motion_copy;
         dungeon_registry.reset();
+        active_registry = open_world_registry.get();
         set_theme("OpenWorld");
         Globals::restart_renderer = true;
     }
 
     void move_player_comps(Registry& from, Registry& to) {
+        // Before moving components, clear any existing components for the player in the target registry
+        if (to.player) {
+            to.remove_all_components_of(to.player);
+        }
+        
         to.player = from.player;
 
-        if (to.attackers.has(to.player)) {  // in case weapon is dropped in dungeon, we don't want to keep it in memory.
+        // Clear any existing weapon components
+        if (to.attackers.has(to.player)) {
             to.remove_all_components_of(to.attackers.get(to.player).weapon);
         }
-        to.remove_all_components_of(from.player);
 
         auto& motion_from = from.motions.get(from.player);
         auto& motion_to = to.motions.emplace(to.player);
@@ -217,9 +256,7 @@ private:
 
     std::unique_ptr<Registry> open_world_registry;    // Persistent open world registry
     std::unique_ptr<Registry> dungeon_registry;       // Temporary dungeon registry
-    // std::unique_ptr<Registry> spire_one_registry;     // Spire1 registry for future use
-    // std::unique_ptr<Registry> spire_two_registry;     // Spire2 registry for future use
-    // std::unique_ptr<Registry> spire_three_registry;   // Spire3 registry for future use
+    std::unique_ptr<Registry> spire_registry;         // Persistent spire registry
     std::unique_ptr<Registry> saved_world_registry;   // Instance of last saved checkpoint (only open_world has save ability)
     Registry* active_registry = nullptr;              // Points to the currently active registry
 };
