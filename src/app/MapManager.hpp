@@ -36,15 +36,15 @@ public:
 
             // add dungeon entrance and bonfire here
             EntityFactory::create_bonfire(registry, glm::vec2(10.0f, 10.0f));
-            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -10.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0);
-            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
-            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -30.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2);
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0, glm::vec3(0.0f,1.0f,0.0f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 0.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1, glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2, glm::vec3(0.0f,0.7f,1.0f));
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
             MapCreatorSystem::populate_open_world_map(registry);
 
-            EntityFactory::create_some_static(registry, glm::vec2(-10.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
+            // EntityFactory::create_some_static(registry, glm::vec2(-10.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
 
             // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
             // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
@@ -93,6 +93,10 @@ public:
             // Populate open world entities here
         }
         active_registry = open_world_registry.get();
+    }
+
+    void save_checkpoint() {
+        *saved_world_registry = *active_registry;
     }
 
     // checks the flags and switches the maps if necessary
@@ -149,7 +153,7 @@ private:
                 floor_texture_name = "jungle_tile_1.jpg";
             } else if (dungeon_difficulty == 1) {
                 Globals::difficulty = 1;
-                sky_texture_name = "SkyboxDark.png";
+                sky_texture_name = "dark_night_skybox.png";
                 wall_texture_name = "tileset_1.png";
                 floor_texture_name = "tileset_7.png";
             } else if (dungeon_difficulty == 2) {

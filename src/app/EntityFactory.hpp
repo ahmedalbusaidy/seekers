@@ -411,7 +411,7 @@ namespace EntityFactory {
     }
 
     // needs new static type
-    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0) {
+    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0, glm::vec3 colour = glm::vec3(1.0f)) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
@@ -436,12 +436,12 @@ namespace EntityFactory {
         auto entity_l1 = Entity();
         auto& light_source1 = registry.light_sources.emplace(entity_l1);
         light_source1.brightness = 5.0f;
-        light_source1.colour = glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f);
+        light_source1.colour = colour;
         light_source1.pos = glm::vec3(position.x - 0.2, position.y, 2.0f);
         auto entity_l2 = Entity();
         auto& light_source2 = registry.light_sources.emplace(entity_l2);
         light_source2.brightness = 5.0f;
-        light_source2.colour = glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f);
+        light_source2.colour = colour;
         light_source2.pos = glm::vec3(position.x + 0.2, position.y, 2.0f);
 
         return entity;
