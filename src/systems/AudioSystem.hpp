@@ -13,6 +13,8 @@
 
 class AudioSystem {
 public:
+    std::unordered_map<std::string, Mix_Music*> music;
+
     static AudioSystem& get_instance() {
         static AudioSystem instance;
         return instance;
@@ -33,10 +35,20 @@ public:
 
     // load background music
     void load_music(const std::string& file_path) {
-        background_music = Mix_LoadMUS(file_path.c_str());
-        if (background_music == nullptr) {
-            std::cerr << "Failed to load music: " << Mix_GetError() << std::endl;
+        if (music.find(file_path) == music.end()) {
+            background_music = Mix_LoadMUS(audio_path(file_path).c_str());
+            if (background_music == nullptr) {
+                std::cerr << "Failed to load music: " << Mix_GetError() << std::endl;
+            }
+            music[file_path] = background_music;
         }
+    }
+
+    void set_music(const std::string& file_path) {
+        if (music.find(file_path) == music.end()) {
+            load_music(file_path);
+        }
+        background_music = music[file_path];
     }
 
     // load sfx
@@ -52,16 +64,24 @@ public:
 
     // load all sound
     void load_all_sound() {
-        load_music(audio_path("music.wav"));
+        load_music("jungle.wav");
+        load_music("open_world.wav");
+        load_music("castle.wav");
+        load_music("cave.wav");
+        load_music("pause.wav");
+        load_music("boss.wav");
         load_sound_effect(audio_path("footstep.wav"));
         load_sound_effect(audio_path("dodge.wav"));
         load_sound_effect(audio_path("bowshot.wav"));
         load_sound_effect(audio_path("swordslash.wav"));
+        load_sound_effect(audio_path("fireball.wav"));
+        load_sound_effect(audio_path("monster_hit.wav"));
+        load_sound_effect(audio_path("drinking.wav"));
     }
 
     // play music
     void start_music() {
-        set_music_volume(7);
+        set_music_volume(50);
         play_music(-1);
     }
 
@@ -139,6 +159,18 @@ public:
         play_sound_effect(audio_path("swordslash.wav"), 0, volume);
     }
 
+    void play_attack_zombie(float distance = 0.0f) {
+        int max_volume = MIX_MAX_VOLUME;
+        int volume = max_volume * find_multiplier_with_distance(distance);
+        play_sound_effect(audio_path("monster_hit.wav"), 0, volume);
+    }
+
+    void play_drink_redull(float distance = 0.0f) {
+        int max_volume = MIX_MAX_VOLUME;
+        int volume = max_volume * find_multiplier_with_distance(distance);
+        play_sound_effect(audio_path("drinking.wav"), 0, volume);
+    }
+
     // Play bow sound effect
     void play_attack_bow(float distance = 0.0f) {
         int max_volume = MIX_MAX_VOLUME / 4;
@@ -151,6 +183,13 @@ public:
         int max_volume = MIX_MAX_VOLUME / 5;
         int volume = max_volume * find_multiplier_with_distance(distance);
         play_sound_effect(audio_path("dodge.wav"), 0, volume);
+    }
+
+    // Play magic sound effect
+    void play_attack_magic(float distance = 0.0f) {
+        int max_volume = MIX_MAX_VOLUME / 3;
+        int volume = max_volume * find_multiplier_with_distance(distance);
+        play_sound_effect(audio_path("fireball.wav"), 0, volume);
     }
 
     // Stop a sound effect playing on a specific channel
@@ -175,11 +214,11 @@ public:
     AudioSystem(const AudioSystem&) = delete;
     AudioSystem& operator=(const AudioSystem&) = delete;
 
+    Mix_Music* background_music;
 private:
     AudioSystem() : background_music(nullptr) {}
     ~AudioSystem() { clean_up(); }
 
-    Mix_Music* background_music;
     std::unordered_map<std::string, Mix_Chunk*> sound_effects;
 
     bool footstep_playing = false;

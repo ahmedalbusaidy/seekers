@@ -244,6 +244,8 @@ namespace GameplaySystem {
         loco.health = fmin(loco.health + registry.estus.get(esti[0]).heal_amount, loco.max_health);
         registry.remove_all_components_of(esti[0]);
         esti.erase(esti.begin());
+
+        AudioSystem::get_instance().play_drink_redull(0.1f);
     }
 
     inline void rest() {
@@ -378,9 +380,17 @@ namespace GameplaySystem {
 
         float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
         if (weapon.type == WEAPON_TYPE::BOW) {
-            audio.play_attack_bow(distance_from_camera);
+            if (Globals::difficulty == 2) {
+                audio.play_attack_magic(distance_from_camera);
+            } else {
+                audio.play_attack_bow(distance_from_camera);
+            }
         } else {
-            audio.play_attack_sword(distance_from_camera);
+            if (Globals::difficulty == 0) {
+                audio.play_attack_zombie(distance_from_camera);
+            } else {
+                audio.play_attack_sword(distance_from_camera);
+            }
         }
     }
 

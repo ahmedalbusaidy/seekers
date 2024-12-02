@@ -142,6 +142,7 @@ private:
 
     void set_theme(std::string theme) {
         if (theme == "OpenWorld") {
+            Globals::difficulty = -1;
             sky_texture_name = "Blue sky.png";
             wall_texture_name = "jungle_tile_1.jpg";
             floor_texture_name = "ground.jpg";

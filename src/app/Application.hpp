@@ -21,6 +21,7 @@
 #include <components/RenderComponents.hpp>
 #include <components/CombatComponents.hpp>
 #include <components/EntityIdentifierComponents.hpp>
+#include <systems/AudioSystem.hpp>
 
 #include <globals/Globals.h>
 
@@ -537,6 +538,9 @@ public:
         AnimatedModel* player_model;
 
         Globals::ptr_window = m_renderer->get_window();
+        AudioSystem& audio = AudioSystem::get_instance();
+        Mix_Music* current_music = nullptr;
+        bool was_in_pause = false;
 
         float time_of_last_frame = 0;
         const float FRAME_TIME_60FPS = 1000000.0f / 60.0f;
@@ -554,12 +558,23 @@ public:
             // m_renderer->set_title(m_window_name + " | FPS: " + std::to_string(m_frame_rate));
             time_of_last_frame = float(m_timer.GetTime());
 
+            
             if (Globals::in_pause) {// testing menustd::unique_ptr<
+                if (audio.music["pause.wav"] != audio.background_music) {
+                    audio.set_music("pause.wav");
+                    audio.start_music();
+                }
                 m_renderer->unlock_cursor();
                 menu_update();
                 main_menu->draw(m_renderer, m_hud_health_shader, m_square_mesh);
                 continue;
             }
+
+            if (was_in_pause && audio.background_music != current_music) {
+                audio.background_music = current_music;
+                audio.play_music();
+            }
+            current_music = audio.background_music;
             m_renderer->lock_cursor();
 
             world.step(delta_time * 0.001f);

@@ -160,6 +160,16 @@ void World::step(float elapsed_ms) {
 
     if (Globals::in_boss_fight) {
         AISystem::boss_AI_step(elapsed_ms);
+        if (Globals::difficulty == 0 && m_audioSystem.music["jungle_boss.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("jungle_boss.wav");
+            m_audioSystem.start_music();
+        } else if (Globals::difficulty == 1 && m_audioSystem.music["castle_boss.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("castle_boss.wav");
+            m_audioSystem.start_music();
+        } else if (Globals::difficulty == 2 && m_audioSystem.music["crystal_boss.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("crystal_boss.wav");
+            m_audioSystem.start_music();
+        }
     } else {
         AISystem::AI_step();
     }
@@ -178,6 +188,22 @@ void World::step(float elapsed_ms) {
     enforce_boundaries(MapManager::get_instance().get_active_registry().player);
 
     MapManager::get_instance().switch_map();
+
+    if (!Globals::in_boss_fight) {
+        if (Globals::difficulty == 0 && m_audioSystem.music["jungle.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("jungle.wav");
+            m_audioSystem.start_music();
+        } else if (Globals::difficulty == 1 && m_audioSystem.music["castle.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("castle.wav");
+            m_audioSystem.start_music();
+        } else if (Globals::difficulty == 2 && m_audioSystem.music["cave.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("cave.wav");
+            m_audioSystem.start_music();
+        } else if (Globals::difficulty == -1 && m_audioSystem.music["open_world.wav"] != m_audioSystem.background_music) {
+            m_audioSystem.set_music("open_world.wav");
+            m_audioSystem.start_music();
+        }
+    }
 }
 
 void World::enforce_boundaries(Entity entity) {
