@@ -1630,7 +1630,7 @@ private:
                 continue;
             }
             float health_percentage = loco.health / loco.max_health;
-            if (loco.health < 0.0f) {health_percentage = 0.0f};
+            if (loco.health < 0.0f) {health_percentage = 0.0f;};
             // Red health bar layer
             float z_index = 1.1;
             glm::vec3 health_bar_pos;
