@@ -95,6 +95,10 @@ public:
         active_registry = open_world_registry.get();
     }
 
+    void save_checkpoint() {
+        *saved_world_registry = *active_registry;
+    }
+
     // checks the flags and switches the maps if necessary
     void switch_map() {
         if (return_open_world_flag) {

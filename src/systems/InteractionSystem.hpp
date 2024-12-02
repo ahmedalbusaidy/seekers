@@ -82,6 +82,7 @@ namespace InteractionSystem {
         } else if (comp.type == INTERACTABLE_TYPE::BONFIRE) {
             GameplaySystem::rest();
             SaveLoadSystem::get_instance().save_game(registry);
+            MapManager::get_instance().save_checkpoint();
         } else if (comp.type == INTERACTABLE_TYPE::ITEM_PICKUP) {
             if (registry.level_ups.has(comp.entity)) {
                 GameplaySystem::consume_level_orb(registry.level_ups.get(comp.entity));
