@@ -532,11 +532,6 @@ namespace ProceduralGenerationSystem {
 
         create_enemies_and_objects(registry, rooms, spawn_room, boss_room, dungeon_difficulty);
 
-        map[0][98] = '!';
-        map[51][149] = '!';
-        // map[row][col]
-        // map[149][0] -> bottom left
-
         // print map
         for (const auto& row : map) {
             for (const auto& cell : row) {
