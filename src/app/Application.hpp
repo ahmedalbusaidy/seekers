@@ -325,6 +325,29 @@ public:
 #pragma endregion
 
 #pragma region WARRIOR
+        AnimatedModel warrok("models/Warrok/Warrok.dae", &animated_shader);
+        warrok.load_animation_from_file("models/Warrok/Left.dae");
+        warrok.load_animation_from_file("models/Warrok/Right.dae");
+        warrok.load_animation_from_file("models/Warrok/Backward.dae");
+        warrok.load_animation_from_file("models/Warrok/Forward.dae");
+        warrok.load_animation_from_file("models/Warrok/Roll.dae");
+        warrok.load_animation_from_file("models/Warrok/Standing Attack.dae");
+        warrok.load_animation_from_file("models/Warrok/Running Attack.dae");
+        warrok.load_animation_from_file("models/Warrok/Dying.dae");
+        warrok.load_animation_from_file("models/Warrok/Stagger.dae");
+        warrok.load_animation_from_file("models/Warrok/Dance.dae");
+        warrok.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        warrok.print_bones();
+        warrok.print_animations();
+#pragma endregion
+
+#pragma region WARRIOR
         AnimatedModel warrior_grunt("models/Warrior Grunt/Warrior Grunt (drake).dae", &animated_shader);
         warrior_grunt.load_animation_from_file("models/Warrior Grunt/Left.dae");
         warrior_grunt.load_animation_from_file("models/Warrior Grunt/Right.dae");
@@ -481,6 +504,9 @@ public:
                             {10.3044329, 14.5560884, 12.8805599}, // rot
                             {25.5, 25.5, 25.5} // scale
                         );
+                    } else if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(warrok, counter++);
+                        const auto& model = m_models[entity.get_id()];
                     } else {
                         m_models[entity.get_id()] = new AnimatedModel(zombie_grunt, counter++);
                         const auto& model = m_models[entity.get_id()];
