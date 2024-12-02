@@ -37,14 +37,14 @@ public:
             // add dungeon entrance and bonfire here
             EntityFactory::create_bonfire(registry, glm::vec2(10.0f, 10.0f));
             EntityFactory::create_portal(registry, glm::vec2(-10.0f, -10.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0);
-            EntityFactory::create_portal(registry, glm::vec2(-20.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
-            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -30.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2);
+            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
+            EntityFactory::create_portal(registry, glm::vec2(-10.0f, -30.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2);
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
             MapCreatorSystem::populate_open_world_map(registry);
 
-            // EntityFactory::create_some_static(registry, glm::vec2(0.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
+            EntityFactory::create_some_static(registry, glm::vec2(0.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
 
             // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
             // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
