@@ -171,6 +171,26 @@ private:
                 registry.light_sources.get(entity));
         }
 
+        if (registry.boss_ais.has(entity)) {
+            entity_data["boss_ai"] = ComponentSerializer::serialize_boss_ai(
+                registry.boss_ais.get(entity));
+        }
+
+        if (registry.buildups.has(entity)) {
+            entity_data["attack_buildup"] = ComponentSerializer::serialize_attack_buildup(
+                registry.buildups.get(entity));
+        }
+
+        if (registry.level_ups.has(entity)) {
+            entity_data["level_up"] = ComponentSerializer::serialize_level_up(
+                registry.level_ups.get(entity));
+        }
+
+        if (registry.estus_cooldowns.has(entity)) {
+            entity_data["estus_cooldown"] = ComponentSerializer::serialize_cooldown(
+                registry.estus_cooldowns.get(entity).timer);
+        }
+
         return entity_data;
     }
 
@@ -224,6 +244,10 @@ public:
         collect_entities(registry.estus);
         collect_entities(registry.interactables);
         collect_entities(registry.light_sources);
+        collect_entities(registry.boss_ais);
+        collect_entities(registry.buildups);
+        collect_entities(registry.estus_cooldowns);
+        collect_entities(registry.level_ups);
         
         // Store global registry state
         registry_data["counter"] = registry.counter;
@@ -409,7 +433,27 @@ public:
                 auto& light = registry.light_sources.emplace(new_entity);
                 ComponentSerializer::deserialize_light_source(light, entity_data["light_source"]);
             }
-            
+
+            if (entity_data.contains("boss_ai")) {
+                auto& boss_ai = registry.boss_ais.emplace(new_entity);
+                ComponentSerializer::deserialize_boss_ai(boss_ai, entity_data["boss_ai"]);
+            }
+
+            if (entity_data.contains("attack_buildup")) {
+                auto& buildup = registry.buildups.emplace(new_entity);
+                ComponentSerializer::deserialize_attack_buildup(buildup, entity_data["attack_buildup"]);
+            }
+
+            if (entity_data.contains("level_up")) {
+                auto& level_up = registry.level_ups.emplace(new_entity);
+                ComponentSerializer::deserialize_level_up(level_up, entity_data["level_up"]);
+            }
+
+            if (entity_data.contains("estus_cooldown")) {
+                float timer;
+                ComponentSerializer::deserialize_cooldown(timer, entity_data["estus_cooldown"]);
+                registry.estus_cooldowns.emplace(new_entity, timer);
+            }
         }
         
         // Second pass: Deserialize components with entity references

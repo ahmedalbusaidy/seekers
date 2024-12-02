@@ -4,8 +4,13 @@
 #include "systems/ProceduralGenerationSystem.hpp"
 #include "systems/MapCreatorSystem.hpp"
 
+// Forward declare MapManagerSerializer
+class MapManagerSerializer;
+
 class MapManager {
 public:
+    friend class MapManagerSerializer;  // Give access to MapManagerSerializer
+
     static MapManager& get_instance() {
         static MapManager instance;
         return instance;
@@ -200,12 +205,17 @@ private:
     }
 
     void move_player_comps(Registry& from, Registry& to) {
+        // Before moving components, clear any existing components for the player in the target registry
+        if (to.player) {
+            to.remove_all_components_of(to.player);
+        }
+        
         to.player = from.player;
 
-        if (to.attackers.has(to.player)) {  // in case weapon is dropped in dungeon, we don't want to keep it in memory.
+        // Clear any existing weapon components
+        if (to.attackers.has(to.player)) {
             to.remove_all_components_of(to.attackers.get(to.player).weapon);
         }
-        to.remove_all_components_of(from.player);
 
         auto& motion_from = from.motions.get(from.player);
         auto& motion_to = to.motions.emplace(to.player);
