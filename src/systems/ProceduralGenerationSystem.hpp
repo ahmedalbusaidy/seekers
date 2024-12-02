@@ -387,7 +387,7 @@ namespace ProceduralGenerationSystem {
         if (start != -1) {
             float mid = start + (end - start)/2.0f;
             float y_pos = map_height/2.0f - mid;
-            EntityFactory::create_boss_entrance(registry, {left_edge - map_width/2.0f, y_pos});
+            EntityFactory::create_boss_entrance(registry, {left_edge - map_width/2.0f, y_pos}, PI / 2.0f);
             EntityFactory::create_wall(registry, {left_edge - map_width/2.0f, y_pos}, PI / 2.0f, {float(end - start + 2), 1.0f});
         }
 
@@ -402,7 +402,7 @@ namespace ProceduralGenerationSystem {
         if (start != -1) {
             float mid = start + (end - start)/2.0f;
             float x_pos = mid - map_width/2.0f;
-            EntityFactory::create_boss_entrance(registry, {x_pos, map_height/2.0f - bottom_edge});
+            EntityFactory::create_boss_entrance(registry, {x_pos, map_height/2.0f - bottom_edge}, 0);
             EntityFactory::create_wall(registry, {x_pos, map_height/2.0f - bottom_edge}, 0, {float(end - start + 2), 1.0f});
         }
     }
@@ -454,7 +454,6 @@ namespace ProceduralGenerationSystem {
                 EntityFactory::create_portal(registry, {room.position.x - 9, room.position.y}, INTERACTABLE_TYPE::DUNGEON_EXIT);
                 continue;
             } else if (room == boss_room) {
-                // TODO: place boss and other stuff
                 EntityFactory::create_test_boss(registry, room.position);
                 continue;
             }
@@ -463,15 +462,18 @@ namespace ProceduralGenerationSystem {
 
             std::random_device rd;
             std::mt19937 gen(rd());
-            std::uniform_int_distribution<> pos_x_dist(room.position.x - room.size.x / 2 + 2, room.position.x + room.size.x / 2 - 2);
-            std::uniform_int_distribution<> pos_y_dist(room.position.y - room.size.y / 2 + 2, room.position.y + room.size.y / 2 - 2);
+            std::uniform_int_distribution<> pos_x_dist(room.position.x - room.size.x / 2 + 4, room.position.x + room.size.x / 2 - 4);
+            std::uniform_int_distribution<> pos_y_dist(room.position.y - room.size.y / 2 + 4, room.position.y + room.size.y / 2 - 4);
+            std::uniform_real_distribution<float> angle_dist(0, 2 * PI);
             std::uniform_int_distribution<> enemy_num_dist(1, room.size.x * room.size.y / 400);
             std::uniform_int_distribution<> object_num_dist(1, room.size.x * room.size.y / 600);
             std::uniform_int_distribution<> enemy_type_dist;
             if (dungeon_difficutly == 0) {
-                enemy_type_dist = std::uniform_int_distribution<>(3, 3);
+                enemy_type_dist = std::uniform_int_distribution<>(2, 2);
             } else if (dungeon_difficutly == 1) {
                 enemy_type_dist = std::uniform_int_distribution<>(0, 1);
+            } else if (dungeon_difficutly == 2) {
+                enemy_type_dist = std::uniform_int_distribution<>(6, 7);
             }
 
 
@@ -494,8 +496,14 @@ namespace ProceduralGenerationSystem {
                     x = pos_x_dist(gen);
                     y = pos_y_dist(gen);
                 }
-
-                EntityFactory::create_tree(registry, {x, y});
+                if (dungeon_difficutly == 0) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::TREE);
+                } else if (dungeon_difficutly == 1) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::STATUE);
+                } else if (dungeon_difficutly == 2) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::CRYSTAL);
+                }
+                //EntityFactory::create_tree(registry, {x, y});
                 enemies_and_objects_pos.push_back({x, y});
             }
         }

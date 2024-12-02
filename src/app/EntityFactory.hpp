@@ -335,6 +335,27 @@ namespace EntityFactory {
         return entity;
     }
 
+    inline Entity create_some_static(Registry& registry, glm::vec2 position, float angle = 0.0f, STATIC_OBJECT_TYPE type = STATIC_OBJECT_TYPE::TREE) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(4.0f, 4.0f);
+        motion.angle = angle;
+
+        auto& team = registry.teams.emplace(entity);
+        team.team_id = TEAM_ID::NEUTRAL;
+
+        auto& tree = registry.static_objects.emplace(entity);
+        tree.type = type;
+
+        // Use circle collider for tree
+        registry.collision_bounds.emplace(entity,
+            CollisionBounds::create_circle(Common::max_of(motion.scale) / 2));
+
+        return entity;
+    }
+
     inline Entity create_rock(Registry& registry, glm::vec2 position) {
         auto entity = Entity();
 
@@ -422,11 +443,12 @@ namespace EntityFactory {
         return entity;
     }
 
-    inline Entity create_boss_entrance(Registry& registry, glm::vec2 position) {
+    inline Entity create_boss_entrance(Registry& registry, glm::vec2 position, float angle) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
         motion.position = position;
+        motion.angle = angle;
         motion.scale = glm::vec2(1.5f);
 
         auto& tree = registry.static_objects.emplace(entity);

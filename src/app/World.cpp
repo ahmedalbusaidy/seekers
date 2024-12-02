@@ -30,6 +30,8 @@ void World::restart_game() {
 
     MapManager::get_instance().restart_maps();
 
+    Globals::in_boss_fight = false;
+
     // Registry& registry = MapManager::get_instance().get_active_registry();
     //
     // // Store the models before clearing
