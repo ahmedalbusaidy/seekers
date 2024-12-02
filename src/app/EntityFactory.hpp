@@ -499,7 +499,7 @@ namespace EntityFactory {
 
 
         auto& enemy = registry.enemies.emplace(entity);
-        enemy.type = ENEMY_TYPE::JUNGLE_BOSS;
+        enemy.type = ENEMY_TYPE::CASTLE_BOSS;
 
         Entity enemy_weapon = EntityFactory::create_weapon(registry, position, 10.0f, 0.5f, WEAPON_TYPE::SWORD);
         attacker.weapon = enemy_weapon;
