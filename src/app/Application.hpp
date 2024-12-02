@@ -72,6 +72,7 @@ class Application {
     Texture2D* m_hud_health_texture_border;
     Texture2D* m_hud_health_texture_bacground;
     Texture2D* m_redbull;
+    Texture2D* m_compass_tex;
     Texture2D* m_lock_on_reticle;
     Texture2D* m_loading_tex;
     Texture2D* m_home_tex;
@@ -136,6 +137,8 @@ public:
         m_menu_textures["resume"] = new Texture2D("menu/resume.png");
         m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.png");
         
+        m_compass_tex = new Texture2D("Compass.png");
+
         m_wall_shader = new Shader("StaticBlinnPhong");
         m_floor_shader = new Shader("StaticBlinnPhong");
 
@@ -1514,7 +1517,7 @@ private:
                 m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
                 m_dungeon_entrance->set_rotation_z(motion.angle);
                 m_crystal->draw();
-            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+            } else if (static_object.type == STATIC_OBJECT_TYPE::STATUE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
                 m_statue->set_position(glm::vec3(motion.position, 0.0f));
                 m_statue->set_rotation_z(motion.angle);
@@ -1788,7 +1791,7 @@ private:
             {0, 0.33, 0}
         );
 
-        reg.inventory.estus.size();
+        
         m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
         m_hud_health_shader->set_uniform_1i("u_texture", m_redbull->bind(28));
         m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
@@ -1801,11 +1804,6 @@ private:
                 }
 
             m_hud_health_shader->set_uniform_mat4f("u_model",
-                // Transform::create_model_matrix(
-                //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
-                //     {0, 0, 0},
-                //     {0.125f, 0.25f, 1}
-                // )
                 Transform::create_translation_matrix(
                     {-1 + i++ * 0.009f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
                 ) * 
@@ -1880,6 +1878,27 @@ private:
                 stat_size,
                 {1,1,1}
             );
+        }
+
+        if (reg.motions.has(reg.player)) {
+            const float aspect_ratio = float(m_renderer->get_window_width()) / float(m_renderer->get_window_height());
+            auto& motion = reg.motions.get(reg.player);
+            m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
+            m_hud_health_shader->set_uniform_1i("u_texture", m_compass_tex->bind(28));
+            m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
+            m_hud_health_shader->set_uniform_mat4f("u_model",
+                Transform::create_translation_matrix(
+                    // {1 - estus_x, 1 - estus_y, 0.0f}
+                    {0.78f, 0.65f, 0.0f}
+                ) * 
+                Transform::create_scaling_matrix(
+                    {0.4f, 0.4f * aspect_ratio, 1}
+                ) *
+                Transform::create_rotation_matrix(
+                    {0, 0, motion.angle - PI / 2.0f}
+                )
+            );
+            m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
 
         _draw_tutorial();
