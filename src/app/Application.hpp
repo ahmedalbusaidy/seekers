@@ -181,8 +181,8 @@ public:
 
         m_fog_gate = new StaticModel("models/Fog Gate.stl", m_wall_shader);
         m_fog_gate->set_pre_transform(
-            Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
-            Transform::create_scaling_matrix(glm::vec3(0.2f, 0.3f, 0.2f))
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.6f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(0.2f, 0.2f, 0.2f))
         );
 
         // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);

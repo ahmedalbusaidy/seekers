@@ -451,13 +451,22 @@ namespace EntityFactory {
         motion.angle = angle;
         motion.scale = glm::vec2(1.5f);
 
-        auto& tree = registry.static_objects.emplace(entity);
-        tree.type = STATIC_OBJECT_TYPE::FOG_WALL;
+        auto& model = registry.static_objects.emplace(entity);
+        model.type = STATIC_OBJECT_TYPE::FOG_WALL;
 
         auto& interact = registry.interactables.emplace(entity);
         interact.entity = entity;
-        interact.range = 3.0f;
+        interact.range = 3.5f;
         interact.type = INTERACTABLE_TYPE::BOSS_ENTRANCE;
+
+        // a second model to look good on both sides
+        auto entity2 = Entity();
+        auto& motion2 = registry.motions.emplace(entity2);
+        motion2.position = position;
+        motion2.angle = angle + PI;
+        motion2.scale = glm::vec2(1.5f);
+        auto& model2 = registry.static_objects.emplace(entity2);
+        model2.type = STATIC_OBJECT_TYPE::FOG_WALL;
 
         return entity;
     }
