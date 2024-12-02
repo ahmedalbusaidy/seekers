@@ -41,4 +41,5 @@ namespace Globals {
     extern bool after_pause;
     extern glm::vec2 desired_camera_position;
     extern bool display_stats;
+    extern bool in_boss_fight;
 }
