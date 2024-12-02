@@ -371,6 +371,42 @@ namespace ProceduralGenerationSystem {
         }
     }
 
+    inline void create_boss_entrance(Registry& registry, const std::vector<std::vector<char>>& map, int map_width, int map_height) {
+        int left_edge = map_width - 52;
+        int bottom_edge = 51;
+
+        int start = -1;
+        int end;
+        for (int i = 0; i <= bottom_edge; i++) {
+            if (start == -1 && (map[i][left_edge] == 'R' || map[i][left_edge] == 'H')) start = i;
+            if (start != -1 && map[i][left_edge] == 'W') {
+                end = i;
+                break;
+            }
+        }
+        if (start != -1) {
+            float mid = start + (end - start)/2.0f;
+            float y_pos = map_height/2.0f - mid;
+            EntityFactory::create_boss_entrance(registry, {left_edge - map_width/2.0f, y_pos});
+            EntityFactory::create_wall(registry, {left_edge - map_width/2.0f, y_pos}, PI / 2.0f, {float(end - start + 2), 1.0f});
+        }
+
+        start = -1;
+        for (int i = left_edge; i < map_width; i++) {
+            if (start == -1 && (map[bottom_edge][i] == 'R' || map[bottom_edge][i] == 'H')) start = i;
+            if (start != -1 && map[bottom_edge][i] == 'W') {
+                end = i;
+                break;
+            }
+        }
+        if (start != -1) {
+            float mid = start + (end - start)/2.0f;
+            float x_pos = mid - map_width/2.0f;
+            EntityFactory::create_boss_entrance(registry, {x_pos, map_height/2.0f - bottom_edge});
+            EntityFactory::create_wall(registry, {x_pos, map_height/2.0f - bottom_edge}, 0, {float(end - start + 2), 1.0f});
+        }
+    }
+
     inline void place_light_sources(Registry& registry, const std::vector<Room>& rooms, int theme) {
         glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);;
         if (theme == 0) {
@@ -397,7 +433,7 @@ namespace ProceduralGenerationSystem {
     inline Room create_boss_room(std::vector<Room>& rooms, int map_width, int map_height) {
         Room room;
         room.size = glm::vec2(50, 50);
-        room.position = glm::vec2((map_width - room.size.x ) / 2 - 1, (map_height - room.size.y) / 2 - 1);
+        room.position = glm::vec2((map_width - room.size.x ) / 2 - 1, (map_height - room.size.y) / 2);
         rooms.push_back(room);
         return room;
     }
@@ -419,6 +455,7 @@ namespace ProceduralGenerationSystem {
                 continue;
             } else if (room == boss_room) {
                 // TODO: place boss and other stuff
+                EntityFactory::create_test_boss(registry, room.position);
                 continue;
             }
 
@@ -476,9 +513,15 @@ namespace ProceduralGenerationSystem {
         connect_rooms(rooms, hallways, map, map_width, map_height);
         place_walls_on_map(map);
         create_walls(registry, map);
+        create_boss_entrance(registry, map, map_width, map_height);
         place_light_sources(registry, rooms, dungeon_difficulty);
 
         create_enemies_and_objects(registry, rooms, spawn_room, boss_room, dungeon_difficulty);
+
+        map[0][98] = '!';
+        map[51][149] = '!';
+        // map[row][col]
+        // map[149][0] -> bottom left
 
         // print map
         for (const auto& row : map) {

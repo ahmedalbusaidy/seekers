@@ -162,8 +162,10 @@ private:
         move_player_comps(*open_world_registry, *dungeon_registry);
         int map_size;
         if (dungeon_difficulty == 0) {
-            map_size = 200;
+            map_size = 150;
         } else if (dungeon_difficulty == 1) {
+            map_size = 300;
+        } else if (dungeon_difficulty == 2) {
             map_size = 500;
         }
         ProceduralGenerationSystem::generate_dungeon(*dungeon_registry, map_size, map_size, dungeon_registry->motions.get(dungeon_registry->player), dungeon_difficulty);

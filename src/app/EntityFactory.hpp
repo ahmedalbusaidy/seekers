@@ -422,6 +422,24 @@ namespace EntityFactory {
         return entity;
     }
 
+    inline Entity create_boss_entrance(Registry& registry, glm::vec2 position) {
+        auto entity = Entity();
+
+        auto& motion = registry.motions.emplace(entity);
+        motion.position = position;
+        motion.scale = glm::vec2(1.5f);
+
+        auto& tree = registry.static_objects.emplace(entity);
+        tree.type = STATIC_OBJECT_TYPE::FOG_WALL;
+
+        auto& interact = registry.interactables.emplace(entity);
+        interact.entity = entity;
+        interact.range = 3.0f;
+        interact.type = INTERACTABLE_TYPE::BOSS_ENTRANCE;
+
+        return entity;
+    }
+
     inline Entity create_light_source(Registry& registry, glm::vec3 position, float brightness, glm::vec3 colour, LIGHT_SOURCE_TYPE type = LIGHT_SOURCE_TYPE::LIGHT_SOURCE_TYPE_COUNT) {
         Entity e = Entity();
         LightSource& light_source = registry.light_sources.emplace(e);
