@@ -454,7 +454,13 @@ namespace ProceduralGenerationSystem {
                 EntityFactory::create_portal(registry, {room.position.x - 9, room.position.y}, INTERACTABLE_TYPE::DUNGEON_EXIT);
                 continue;
             } else if (room == boss_room) {
-                EntityFactory::create_test_boss(registry, room.position);
+                if (dungeon_difficutly == 0) {
+                    EntityFactory::create_jungle_boss(registry, room.position);
+                } else if (dungeon_difficutly == 1) {
+                    EntityFactory::create_castle_boss(registry, room.position);
+                } else if (dungeon_difficutly == 2) {
+                    EntityFactory::create_cave_boss(registry, room.position);
+                }
                 continue;
             }
 
