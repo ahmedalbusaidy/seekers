@@ -237,6 +237,8 @@ namespace GameplaySystem {
             registry.death_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) return;
 
         registry.estus_cooldowns.emplace(registry.player, 1.0f);
+
+        AudioSystem::get_instance().play_drink_redull(0.0001f);
     }
 
     inline void truly_consume_estus() {
@@ -381,9 +383,17 @@ namespace GameplaySystem {
 
         float distance_from_camera = glm::distance(registry.camera_pos, motion.position);
         if (weapon.type == WEAPON_TYPE::BOW) {
-            audio.play_attack_bow(distance_from_camera);
+            if (Globals::difficulty == 2) {
+                audio.play_attack_magic(distance_from_camera);
+            } else {
+                audio.play_attack_bow(distance_from_camera);
+            }
         } else {
-            audio.play_attack_sword(distance_from_camera);
+            if (Globals::difficulty == 0) {
+                audio.play_attack_zombie(distance_from_camera);
+            } else {
+                audio.play_attack_sword(distance_from_camera);
+            }
         }
     }
 
