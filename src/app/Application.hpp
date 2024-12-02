@@ -1527,7 +1527,7 @@ private:
                 m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
                 m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
                 m_level_up_orb->draw();
-            } else if (static_object.type == STATIC_OBJECT_TYPE::LEVEL_UP_ORB) {
+            } else if (static_object.type == STATIC_OBJECT_TYPE::FOG_WALL) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 0.75f, 0.75f, 0.75f });
                 m_fog_gate->set_position_x(motion.position.x);
                 m_fog_gate->set_position_y(motion.position.y);
