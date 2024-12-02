@@ -432,7 +432,7 @@ namespace CollisionSystem {
         if (std::find(projectile.hit_locos.begin(), projectile.hit_locos.end(), (unsigned int)loco) != projectile.hit_locos.end()) return;
         projectile.hit_locos.push_back(loco);
 
-        loco_stats.health -= projectile.damage;
+        loco_stats.health -= projectile.damage * (100.0f / (100.0f + loco_stats.defense));
         loco_stats.poise -= projectile.poise_points;
         if (loco_stats.poise <= 0 && !registry.stagger_cooldowns.has(loco)) {
             registry.stagger_cooldowns.emplace(loco, projectile.stagger_duration);

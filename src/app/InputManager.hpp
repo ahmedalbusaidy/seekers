@@ -32,6 +32,10 @@ namespace InputManager {
             return;
         }
 
+        if (action == GLFW_PRESS && key == GLFW_KEY_H) {
+            Globals::display_stats = !Globals::display_stats;
+        }
+
         if (Globals::is_getting_up) return;
 
         if (action == GLFW_PRESS && key == GLFW_KEY_F) {
@@ -77,12 +81,12 @@ namespace InputManager {
                 GameplaySystem::consume_estus();
             }
 
-            // if (key == GLFW_KEY_G) {
-            //     MapManager::get_instance().enter_dungeon_flag = true;
-            // }
-            // if (key == GLFW_KEY_R) {
-            //     MapManager::get_instance().return_open_world_flag = true;
-            // }
+            if (key == GLFW_KEY_G) {
+                MapManager::get_instance().enter_spire_flag = true;
+            }
+            if (key == GLFW_KEY_R) {
+                MapManager::get_instance().return_open_world_flag = true;
+            }
 
             if (key == GLFW_KEY_F5) {
                 // Simple save with timestamp as name
@@ -99,6 +103,12 @@ namespace InputManager {
                 } else {
                     std::cout << "Failed to load game" << std::endl;
                 }
+            }
+
+            if (key == GLFW_KEY_F12) {
+                // spawn level 2 orbs
+                glm::vec2 pos = glm::vec2(player_motion.position.x + cos(player_motion.angle), player_motion.position.y + sin(player_motion.angle));
+                EntityFactory::create_level_up_orb(registry, pos, 2);
             }
 
             // if (key == GLFW_KEY_G) {

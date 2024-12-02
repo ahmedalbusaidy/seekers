@@ -371,13 +371,54 @@ namespace ProceduralGenerationSystem {
         }
     }
 
-    inline void place_light_sources(Registry& registry, const std::vector<Room>& rooms) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> color_dist(0.0f, 1.0f);
+    inline void create_boss_entrance(Registry& registry, const std::vector<std::vector<char>>& map, int map_width, int map_height) {
+        int left_edge = map_width - 52;
+        int bottom_edge = 51;
+
+        int start = -1;
+        int end;
+        for (int i = 0; i <= bottom_edge; i++) {
+            if (start == -1 && (map[i][left_edge] == 'R' || map[i][left_edge] == 'H')) start = i;
+            if (start != -1 && map[i][left_edge] == 'W') {
+                end = i;
+                break;
+            }
+        }
+        if (start != -1) {
+            float mid = start + (end - start)/2.0f;
+            float y_pos = map_height/2.0f - mid;
+            EntityFactory::create_boss_entrance(registry, {left_edge - map_width/2.0f, y_pos}, PI / 2.0f);
+            EntityFactory::create_wall(registry, {left_edge - map_width/2.0f, y_pos}, PI / 2.0f, {float(end - start + 2), 1.0f});
+        }
+
+        start = -1;
+        for (int i = left_edge; i < map_width; i++) {
+            if (start == -1 && (map[bottom_edge][i] == 'R' || map[bottom_edge][i] == 'H')) start = i;
+            if (start != -1 && map[bottom_edge][i] == 'W') {
+                end = i;
+                break;
+            }
+        }
+        if (start != -1) {
+            float mid = start + (end - start)/2.0f;
+            float x_pos = mid - map_width/2.0f;
+            EntityFactory::create_boss_entrance(registry, {x_pos, map_height/2.0f - bottom_edge}, 0);
+            EntityFactory::create_wall(registry, {x_pos, map_height/2.0f - bottom_edge}, 0, {float(end - start + 2), 1.0f});
+        }
+    }
+
+    inline void place_light_sources(Registry& registry, const std::vector<Room>& rooms, int theme) {
+        glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);;
+        if (theme == 0) {
+            color = glm::vec3(0.7f, 1.0f, 0.7f);
+        } else if (theme == 1) {
+            color = glm::vec3(0.9f, 0.7f, 1.0f);
+        } else if (theme == 2) {
+            color = glm::vec3(0.7f, 1.0f, 1.0f);
+        }
         for (const auto& room : rooms) {
-            glm::vec3 color = glm::vec3(color_dist(gen), color_dist(gen), color_dist(gen));
-            EntityFactory::create_light_source(registry, glm::vec3(room.position, 6.0f), 10.0f, color, LIGHT_SOURCE_TYPE::MAGIC_ORB);
+            float brightness = std::sqrt(room.size.x * room.size.y) / 5.0f;
+            EntityFactory::create_light_source(registry, glm::vec3(room.position, 6.0f), brightness, color, LIGHT_SOURCE_TYPE::MAGIC_ORB);
         }
     }
 
@@ -385,6 +426,14 @@ namespace ProceduralGenerationSystem {
         Room room;
         room.size = glm::vec2(20, 20);
         room.position = glm::vec2((-map_width + room.size.x ) / 2 + 1, (-map_height + room.size.y) / 2 + 2);
+        rooms.push_back(room);
+        return room;
+    }
+
+    inline Room create_boss_room(std::vector<Room>& rooms, int map_width, int map_height) {
+        Room room;
+        room.size = glm::vec2(50, 50);
+        room.position = glm::vec2((map_width - room.size.x ) / 2 - 1, (map_height - room.size.y) / 2);
         rooms.push_back(room);
         return room;
     }
@@ -399,10 +448,19 @@ namespace ProceduralGenerationSystem {
         return false;
     }
 
-    inline void create_enemies_and_objects(Registry& registry, const std::vector<Room>& rooms, const Room& spawn_room, int dungeon_difficutly) {
+    inline void create_enemies_and_objects(Registry& registry, const std::vector<Room>& rooms, const Room& spawn_room, const Room& boss_room, int dungeon_difficutly) {
         for (const Room& room : rooms) {
             if (room == spawn_room) {
                 EntityFactory::create_portal(registry, {room.position.x - 9, room.position.y}, INTERACTABLE_TYPE::DUNGEON_EXIT);
+                continue;
+            } else if (room == boss_room) {
+                if (dungeon_difficutly == 0) {
+                    EntityFactory::create_jungle_boss(registry, room.position);
+                } else if (dungeon_difficutly == 1) {
+                    EntityFactory::create_castle_boss(registry, room.position);
+                } else if (dungeon_difficutly == 2) {
+                    EntityFactory::create_cave_boss(registry, room.position);
+                }
                 continue;
             }
 
@@ -410,15 +468,18 @@ namespace ProceduralGenerationSystem {
 
             std::random_device rd;
             std::mt19937 gen(rd());
-            std::uniform_int_distribution<> pos_x_dist(room.position.x - room.size.x / 2 + 2, room.position.x + room.size.x / 2 - 2);
-            std::uniform_int_distribution<> pos_y_dist(room.position.y - room.size.y / 2 + 2, room.position.y + room.size.y / 2 - 2);
+            std::uniform_int_distribution<> pos_x_dist(room.position.x - room.size.x / 2 + 4, room.position.x + room.size.x / 2 - 4);
+            std::uniform_int_distribution<> pos_y_dist(room.position.y - room.size.y / 2 + 4, room.position.y + room.size.y / 2 - 4);
+            std::uniform_real_distribution<float> angle_dist(0, 2 * PI);
             std::uniform_int_distribution<> enemy_num_dist(1, room.size.x * room.size.y / 400);
             std::uniform_int_distribution<> object_num_dist(1, room.size.x * room.size.y / 600);
             std::uniform_int_distribution<> enemy_type_dist;
             if (dungeon_difficutly == 0) {
-                enemy_type_dist = std::uniform_int_distribution<>(3, 3);
+                enemy_type_dist = std::uniform_int_distribution<>(2, 2);
             } else if (dungeon_difficutly == 1) {
                 enemy_type_dist = std::uniform_int_distribution<>(0, 1);
+            } else if (dungeon_difficutly == 2) {
+                enemy_type_dist = std::uniform_int_distribution<>(6, 7);
             }
 
 
@@ -441,8 +502,14 @@ namespace ProceduralGenerationSystem {
                     x = pos_x_dist(gen);
                     y = pos_y_dist(gen);
                 }
-
-                EntityFactory::create_tree(registry, {x, y});
+                if (dungeon_difficutly == 0) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::TREE);
+                } else if (dungeon_difficutly == 1) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::STATUE);
+                } else if (dungeon_difficutly == 2) {
+                    EntityFactory::create_some_static(registry, {x, y}, angle_dist(gen), STATIC_OBJECT_TYPE::CRYSTAL);
+                }
+                //EntityFactory::create_tree(registry, {x, y});
                 enemies_and_objects_pos.push_back({x, y});
             }
         }
@@ -453,15 +520,22 @@ namespace ProceduralGenerationSystem {
 
         std::vector<Room> rooms;
         Room spawn_room = create_spawn_room(rooms, map_width, map_height);
+        Room boss_room = create_boss_room(rooms, map_width, map_height);
         player_motion.position = spawn_room.position;
         generate_rooms(map_width, map_height, rooms);
         std::vector<Hallway> hallways = generate_hallways(rooms);
         connect_rooms(rooms, hallways, map, map_width, map_height);
         place_walls_on_map(map);
         create_walls(registry, map);
-        place_light_sources(registry, rooms);
+        create_boss_entrance(registry, map, map_width, map_height);
+        place_light_sources(registry, rooms, dungeon_difficulty);
 
-        create_enemies_and_objects(registry, rooms, spawn_room, dungeon_difficulty);
+        create_enemies_and_objects(registry, rooms, spawn_room, boss_room, dungeon_difficulty);
+
+        map[0][98] = '!';
+        map[51][149] = '!';
+        // map[row][col]
+        // map[149][0] -> bottom left
 
         // print map
         for (const auto& row : map) {

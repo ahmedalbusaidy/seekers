@@ -201,6 +201,7 @@ namespace GameplaySystem {
         glm::vec2 dodge_target_pos;
         if (glm::length(motion.velocity) < 0.00001) {
             dodge_target_pos = motion.position + -glm::vec2(cos(motion.angle), sin(motion.angle)) * Globals::dodgeMoveMag;
+            motion.velocity = -glm::vec2(cos(motion.angle), sin(motion.angle)); // to play the animation in the correct direction
         } else {
             dodge_target_pos = motion.position + Common::normalize(motion.velocity) * Globals::dodgeMoveMag;
         }
@@ -359,7 +360,7 @@ namespace GameplaySystem {
         if (from_boss) {
             boss_attack(e, motion, attacker, weapon, attack_type);
         } else {
-            EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id);
+            EntityFactory::create_projectile(registry, motion, attacker, weapon, registry.teams.get(e).team_id, registry.locomotion_stats.get(e).power);
             registry.attack_cooldowns.emplace(e, weapon.attack_cooldown);
             deplete_energy(e, weapon.attack_energy_cost);
         }

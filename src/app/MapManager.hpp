@@ -2,7 +2,7 @@
 
 #include "ecs/Registry.hpp"
 #include "systems/ProceduralGenerationSystem.hpp"
-#include "systems/OpenWorldMapCreatorSystem.hpp"
+#include "systems/MapCreatorSystem.hpp"
 
 // Forward declare MapManagerSerializer
 class MapManagerSerializer;
@@ -37,14 +37,15 @@ public:
             // add dungeon entrance and bonfire here
             EntityFactory::create_bonfire(registry, glm::vec2(10.0f, 10.0f));
             EntityFactory::create_portal(registry, glm::vec2(-10.0f, -10.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0);
-            EntityFactory::create_portal(registry, glm::vec2(-150.0f, -100.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
+            EntityFactory::create_portal(registry, glm::vec2(-20.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1);
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -30.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2);
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
-            OpenWorldMapCreatorSystem::populate_open_world_map(registry);
+            MapCreatorSystem::populate_open_world_map(registry);
 
             // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
-            EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 10.0f), 0);
+            // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
 
             saved_world_registry = std::make_unique<Registry>();
             *saved_world_registry = *open_world_registry;
@@ -66,7 +67,7 @@ public:
         active_registry = open_world_registry.get();
 
         spire_registry = std::make_unique<Registry>();
-        // TODO: populate spire
+        MapCreatorSystem::populate_spire_map(*spire_registry);
     }
 
     // Called on respawns (ie. player death)
@@ -106,6 +107,12 @@ public:
                 return;
             }
             enter_dungeon();
+        } else if (enter_spire_flag) {
+            if (active_registry == spire_registry.get()) {
+                std::cout << "Already in dungeon. Enter operation is illegal." << std::endl;
+                return;
+            }
+            enter_spire();
         }
     }
 
@@ -116,9 +123,7 @@ public:
     bool return_open_world_flag = false;
     bool enter_dungeon_flag = false;
     int dungeon_difficulty;
-    // bool enter_spire_one_flag = false;
-    // bool enter_spire_two_flag = false;
-    // bool enter_spire_three_flag = false;
+    bool enter_spire_flag = false;
 
     std::string sky_texture_name;
     std::string wall_texture_name;
@@ -143,6 +148,10 @@ private:
                 sky_texture_name = "SkyboxDark.png";
                 wall_texture_name = "tileset_1.png";
                 floor_texture_name = "tileset_7.png";
+            } else if (dungeon_difficulty == 2) {
+                sky_texture_name = "SkyboxDark.png";
+                wall_texture_name = "crystal_wall.png";
+                floor_texture_name = "crystal_floor.png";
             }
         }
     }
@@ -156,15 +165,32 @@ private:
         dungeon_registry = std::make_unique<Registry>();
         active_registry = dungeon_registry.get();
         move_player_comps(*open_world_registry, *dungeon_registry);
-        int map_size;
+        int map_width;
+        int map_height;
         if (dungeon_difficulty == 0) {
-            map_size = 200;
+            map_width = map_height = 150;
         } else if (dungeon_difficulty == 1) {
-            map_size = 500;
+            map_width = map_height = 250;
+        } else if (dungeon_difficulty == 2) {
+            map_width = 200;
+            map_height = 500;
         }
-        ProceduralGenerationSystem::generate_dungeon(*dungeon_registry, map_size, map_size, dungeon_registry->motions.get(dungeon_registry->player), dungeon_difficulty);
+        ProceduralGenerationSystem::generate_dungeon(*dungeon_registry, map_width, map_height, dungeon_registry->motions.get(dungeon_registry->player), dungeon_difficulty);
         // dungeon_registry->projectile_models = open_world_registry->projectile_models;
         set_theme("Dungeon");
+        Globals::restart_renderer = true;
+    }
+
+    void enter_spire() {
+        if (Globals::show_loading_screen) {
+            Globals::show_loading_screen = false;
+            return;
+        }
+        enter_spire_flag = false;
+        active_registry = spire_registry.get();
+        move_player_comps(*open_world_registry, *spire_registry);
+        // spire_registry->projectile_models = open_world_registry->projectile_models;
+        set_theme("OpenWorld"); // TODO: change this to spire theme
         Globals::restart_renderer = true;
     }
 
@@ -174,11 +200,15 @@ private:
             return;
         }
         return_open_world_flag = false;
-        active_registry = open_world_registry.get();
         Motion player_motion_copy = open_world_registry->motions.get(open_world_registry->player);
-        move_player_comps(*dungeon_registry, *open_world_registry);
+        if (active_registry == dungeon_registry.get()) {
+            move_player_comps(*dungeon_registry, *open_world_registry);
+        } else {
+            move_player_comps(*spire_registry, *open_world_registry);
+        }
         open_world_registry->motions.get(open_world_registry->player) = player_motion_copy;
         dungeon_registry.reset();
+        active_registry = open_world_registry.get();
         set_theme("OpenWorld");
         Globals::restart_renderer = true;
     }

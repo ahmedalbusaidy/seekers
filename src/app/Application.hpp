@@ -57,6 +57,7 @@ class Application {
     StaticModel* m_dungeon_entrance;
     StaticModel* m_portal;
     StaticModel* m_sword;
+    StaticModel* m_fog_gate;
     StaticModel* m_bow;
     StaticModel* m_arrow;
     StaticModel* m_banana;
@@ -71,6 +72,7 @@ class Application {
     Texture2D* m_hud_health_texture_border;
     Texture2D* m_hud_health_texture_bacground;
     Texture2D* m_redbull;
+    Texture2D* m_compass_tex;
     Texture2D* m_lock_on_reticle;
     Texture2D* m_loading_tex;
     Texture2D* m_home_tex;
@@ -138,6 +140,8 @@ public:
         m_menu_textures["resume"] = new Texture2D("menu/resume.png");
         m_menu_textures["hover_resume"] = new Texture2D("menu/hover_resume.png");
         
+        m_compass_tex = new Texture2D("Compass.png");
+
         m_wall_shader = new Shader("StaticBlinnPhong");
         m_floor_shader = new Shader("StaticBlinnPhong");
 
@@ -179,6 +183,12 @@ public:
         m_crystal->set_pre_transform(
             Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
             Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
+        );
+
+        m_fog_gate = new StaticModel("models/Fog Gate.stl", m_wall_shader);
+        m_fog_gate->set_pre_transform(
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.6f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(0.2f, 0.2f, 0.2f))
         );
 
         // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);
@@ -325,6 +335,121 @@ public:
         );
         hero.print_bones();
         hero.print_animations();
+#pragma endregion
+
+#pragma region JUNGLE BOSS
+        AnimatedModel warrok("models/Warrok/Warrok.dae", &animated_shader);
+        warrok.load_animation_from_file("models/Warrok/Left.dae");
+        warrok.load_animation_from_file("models/Warrok/Right.dae");
+        warrok.load_animation_from_file("models/Warrok/Backward.dae");
+        warrok.load_animation_from_file("models/Warrok/Forward.dae");
+        warrok.load_animation_from_file("models/Warrok/Roll.dae");
+        warrok.load_animation_from_file("models/Warrok/Standing Attack.dae");
+        warrok.load_animation_from_file("models/Warrok/Running Attack.dae");
+        warrok.load_animation_from_file("models/Warrok/Dying.dae");
+        warrok.load_animation_from_file("models/Warrok/Stagger.dae");
+        warrok.load_animation_from_file("models/Warrok/Dance.dae");
+        warrok.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        warrok.print_bones();
+        warrok.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL WARRIOR
+        AnimatedModel vampire("models/Vampire/Vampire.dae", &animated_shader);
+        vampire.load_animation_from_file("models/Vampire/Left.dae");
+        vampire.load_animation_from_file("models/Vampire/Right.dae");
+        vampire.load_animation_from_file("models/Vampire/Backward.dae");
+        vampire.load_animation_from_file("models/Vampire/Forward.dae");
+        vampire.load_animation_from_file("models/Vampire/Roll.dae");
+        vampire.load_animation_from_file("models/Vampire/Standing Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Running Attack.dae");
+        vampire.load_animation_from_file("models/Vampire/Dying.dae");
+        vampire.load_animation_from_file("models/Vampire/Stagger.dae");
+        vampire.load_animation_from_file("models/Vampire/Dance.dae");
+        vampire.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        vampire.print_bones();
+        vampire.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL RANGED
+        AnimatedModel nightshade("models/Nightshade/Nightshade.dae", &animated_shader);
+        nightshade.load_animation_from_file("models/Nightshade/Left.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Right.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Backward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Forward.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Roll.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Standing Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Running Attack.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dying.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Stagger.dae");
+        nightshade.load_animation_from_file("models/Nightshade/Dance.dae");
+        nightshade.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        nightshade.print_bones();
+        nightshade.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL BOSS
+        AnimatedModel mutant("models/Mutant/Mutant.dae", &animated_shader);
+        mutant.load_animation_from_file("models/Warrok/Left.dae");
+        mutant.load_animation_from_file("models/Warrok/Right.dae");
+        mutant.load_animation_from_file("models/Warrok/Backward.dae");
+        mutant.load_animation_from_file("models/Warrok/Forward.dae");
+        mutant.load_animation_from_file("models/Warrok/Roll.dae");
+        mutant.load_animation_from_file("models/Warrok/Standing Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Running Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Dying.dae");
+        mutant.load_animation_from_file("models/Warrok/Stagger.dae");
+        mutant.load_animation_from_file("models/Warrok/Dance.dae");
+        mutant.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        mutant.print_bones();
+        mutant.print_animations();
+#pragma endregion
+
+#pragma region CASTLE BOSS
+        AnimatedModel ganfaul("models/Ganfaul/Ganfaul.dae", &animated_shader);
+        ganfaul.load_animation_from_file("models/Ganfaul/Left.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Right.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Backward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Forward.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Roll.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Standing Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Running Attack.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dying.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Stagger.dae");
+        ganfaul.load_animation_from_file("models/Ganfaul/Dance.dae");
+        ganfaul.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.03)
+            )
+        );
+        ganfaul.print_bones();
+        ganfaul.print_animations();
 #pragma endregion
 
 #pragma region WARRIOR
@@ -484,6 +609,35 @@ public:
                             {10.3044329, 14.5560884, 12.8805599}, // rot
                             {25.5, 25.5, 25.5} // scale
                         );
+                    } else if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(warrok, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(mutant, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CASTLE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(ganfaul, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_WARRIOR) {
+                        m_models[entity.get_id()] = new AnimatedModel(vampire, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                        model->attach_to_joint(
+                            m_sword,
+                            "mixamorig_RightHand",
+                            {63.0, 35.0, 7.0}, // pos
+                            {4.7752223, 19.3731594, 11.5401363}, // rot
+                            {11.5, 11.5, 11.5} // scale
+                        );
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_ARCHER) {
+                        m_models[entity.get_id()] = new AnimatedModel(nightshade, counter++);
+                        const auto& model = m_models[entity.get_id()];
                     } else {
                         m_models[entity.get_id()] = new AnimatedModel(zombie_grunt, counter++);
                         const auto& model = m_models[entity.get_id()];
@@ -529,7 +683,8 @@ public:
                     is_dodging = true;
                 }
 
-                const glm::vec3 desired_camera_pos = glm::vec3(player_motion.position - (cam_dir * 3.0f), 3.5f) + (1.2f * ortho_cam_dir);
+                const glm::vec3 desired_camera_pos = glm::vec3(Globals::desired_camera_position, 3.5f);
+                // const glm::vec3 desired_camera_pos = glm::vec3(player_motion.position - (cam_dir * 3.0f), 3.5f) + (1.2f * ortho_cam_dir);
                 glm::vec3 current_camera_position = m_camera.get_position();
                 float dist_from_desired_pos = glm::distance(desired_camera_pos, current_camera_position);
                 glm::vec3 dir_ortho_to_player = glm::normalize(
@@ -1382,7 +1537,7 @@ private:
                 m_dungeon_entrance->set_position(glm::vec3(motion.position, 0.0f));
                 m_dungeon_entrance->set_rotation_z(motion.angle);
                 m_crystal->draw();
-            } else if (static_object.type == STATIC_OBJECT_TYPE::CRYSTAL) {
+            } else if (static_object.type == STATIC_OBJECT_TYPE::STATUE) {
                 m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
                 m_statue->set_position(glm::vec3(motion.position, 0.0f));
                 m_statue->set_rotation_z(motion.angle);
@@ -1395,6 +1550,12 @@ private:
                 m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
                 m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
                 m_level_up_orb->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::FOG_WALL) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 0.75f, 0.75f, 0.75f });
+                m_fog_gate->set_position_x(motion.position.x);
+                m_fog_gate->set_position_y(motion.position.y);
+                m_fog_gate->set_rotation_z(motion.angle);
+                m_fog_gate->draw();
             }
         }
 
@@ -1403,12 +1564,11 @@ private:
         // // float z = 0.0f;
         // for (auto ewqrqf : {1}) {
         //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-        //     m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-            
-        //     m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
-        //     m_level_up_orb->draw();
+        //     m_fog_gate->set_position_x(x);
+        //     // m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_fog_gate->set_scale(glm::vec3(1.0f));
+        //     m_fog_gate->draw();
         //     x += 50;
         // }
         // change colour back lol
@@ -1651,7 +1811,7 @@ private:
             {0, 0.33, 0}
         );
 
-        reg.inventory.estus.size();
+        
         m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
         m_hud_health_shader->set_uniform_1i("u_texture", m_redbull->bind(28));
         m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
@@ -1664,11 +1824,6 @@ private:
                 }
 
             m_hud_health_shader->set_uniform_mat4f("u_model",
-                // Transform::create_model_matrix(
-                //     {-1 + 1 * size / 2, -1 + i++ * 0.275f + 3 * size / 2, 0.0f},
-                //     {0, 0, 0},
-                //     {0.125f, 0.25f, 1}
-                // )
                 Transform::create_translation_matrix(
                     {-1 + i++ * 0.009f + 1 * size / 2, -1 + 3 * size / 2, 0.0f}
                 ) * 
@@ -1682,13 +1837,173 @@ private:
             m_renderer->draw(m_square_mesh, *m_hud_health_shader);
         }
         FontStuff& font_monkey = FontStuff::get_instance();
-        font_monkey.render_text(std::to_string(int(i)), m_renderer->get_window_width() / 12.0f, m_renderer->get_window_height() / 9.0f, float(m_renderer->get_window_width()) / (1920.f), {1,1,1});
+        float estus_x = m_renderer->get_window_width() / 12.0f;
+        float estus_y = m_renderer->get_window_height() / 9.0f;
+        float estus_size = float(m_renderer->get_window_width()) / (1920.f);
+        font_monkey.render_text(std::to_string(int(i)), estus_x, estus_y, estus_size, {1,1,1});
         
+        float stat_x = m_renderer->get_window_width() / 90.0f;
+        float stat_spacing = m_renderer->get_window_height() / 46.08f;
+        float stat_y = m_renderer->get_window_height() - stat_spacing;
+        float stat_size = float(m_renderer->get_window_width()) / (2.0f * 1920.f);
+        if (Globals::display_stats && reg.locomotion_stats.has(reg.player)) {
+            auto& loco = reg.locomotion_stats.get(reg.player);
+
+            font_monkey.render_text(
+                "Health: " + std::to_string(int(loco.max_health)), 
+                stat_x, 
+                stat_y - stat_spacing * 0.0f, 
+                stat_size, 
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Energy: " + std::to_string(int(loco.max_energy)), 
+                stat_x, 
+                stat_y - stat_spacing * 1.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Poise: " + std::to_string(int(loco.max_poise)), 
+                stat_x, 
+                stat_y - stat_spacing * 2.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Defense: " + std::to_string(int(loco.defense)), 
+                stat_x, 
+                stat_y - stat_spacing * 3.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Power: " + std::to_string(int(loco.power)), 
+                stat_x, 
+                stat_y - stat_spacing * 4.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Agility: " + std::to_string(int(loco.agility)), 
+                stat_x, 
+                stat_y - stat_spacing * 5.0f,
+                stat_size,
+                {1,1,1}
+            );
+            font_monkey.render_text(
+                "Healing: " + std::to_string(int(reg.inventory.estus_heal_amount)), 
+                stat_x, 
+                stat_y - stat_spacing * 6.0f,
+                stat_size,
+                {1,1,1}
+            );
+        }
+
+        if (reg.motions.has(reg.player)) {
+            const float aspect_ratio = float(m_renderer->get_window_width()) / float(m_renderer->get_window_height());
+            auto& motion = reg.motions.get(reg.player);
+            m_hud_health_shader->set_uniform_3f("u_colour", glm::vec3(1.0f));
+            m_hud_health_shader->set_uniform_1i("u_texture", m_compass_tex->bind(28));
+            m_hud_health_shader->set_uniform_1f("u_health_percentage", 1.0f);
+            m_hud_health_shader->set_uniform_mat4f("u_model",
+                Transform::create_translation_matrix(
+                    // {1 - estus_x, 1 - estus_y, 0.0f}
+                    {0.78f, 0.65f, 0.0f}
+                ) * 
+                Transform::create_scaling_matrix(
+                    {0.4f, 0.4f * aspect_ratio, 1}
+                ) *
+                Transform::create_rotation_matrix(
+                    {0, 0, motion.angle - PI / 2.0f}
+                )
+            );
+            m_renderer->draw(m_square_mesh, *m_hud_health_shader);
+        }
 
         _draw_tutorial();
 
         if (reg.near_interactable.is_active) {
             font_monkey.render_text(reg.near_interactable.message.c_str(), m_renderer->get_window_width() / 2.0f, m_renderer->get_window_height() / 2.0f, float(m_renderer->get_window_width()) / 1920.f, {0.95f, 0, 0});
+        
+            if (Globals::display_stats && reg.level_ups.has(reg.near_interactable.interactable)) {
+                auto& lvl_up = reg.level_ups.get(reg.near_interactable.interactable);
+                // lvl_up.
+                stat_x *= 7.0f;
+                if (lvl_up.health >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.health)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 0.0f, 
+                        stat_size, 
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.energy >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.energy)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 1.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.poise >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.poise)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 2.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.defense >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.defense)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 3.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.power >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.power)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 4.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.agility >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.agility)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 5.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.estus_heal >= 1.0f) {
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.estus_heal)), 
+                        stat_x, 
+                        stat_y - stat_spacing * 6.0f,
+                        stat_size,
+                        {0,1,0}
+                    );
+                }
+                if (lvl_up.estus_num >= 1.0f) {
+                    estus_x *= 1.1f;
+                    font_monkey.render_text(
+                        "+" + std::to_string(int(lvl_up.estus_num)), 
+                        estus_x, 
+                        estus_y,
+                        estus_size,
+                        {1,1,0}
+                    );
+                }
+            }
         }
 
         glm::vec3 fps_colour;

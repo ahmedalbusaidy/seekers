@@ -55,6 +55,13 @@ namespace InteractionSystem {
             registry.near_interactable.message = std::string("Press F to Exit Spire");
         } else if (inter_comp.type == INTERACTABLE_TYPE::NPC) {
             registry.near_interactable.message = std::string("Press F to Talk");
+        } else if (inter_comp.type == INTERACTABLE_TYPE::BOSS_ENTRANCE) {
+            if (Globals::in_boss_fight) {
+                registry.near_interactable.message = std::string("There's NO ESCAPE");
+            } else {
+                registry.near_interactable.message = std::string("Press F to Go Through");
+            }
+
         }
     }
 
@@ -79,6 +86,12 @@ namespace InteractionSystem {
             if (registry.level_ups.has(comp.entity)) {
                 GameplaySystem::consume_level_orb(registry.level_ups.get(comp.entity));
                 registry.remove_all_components_of(comp.entity);
+            }
+        } else if (comp.type == INTERACTABLE_TYPE::BOSS_ENTRANCE) {
+            if (!Globals::in_boss_fight) {
+                if (registry.boss_ais.entities.size() > 0) Globals::in_boss_fight = true;
+                Motion& motion = registry.motions.get(registry.player);
+                motion.position += 5.0f * glm::vec2(cos(motion.angle), sin(motion.angle));
             }
         }
     }
