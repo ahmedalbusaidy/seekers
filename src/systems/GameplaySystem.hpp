@@ -66,6 +66,17 @@ namespace GameplaySystem {
             if (registry.player == e) {
                 World::restart_game();
                 return;
+            } else if (registry.boss_ais.has(e)) {
+                auto& enemy = registry.enemies.get(e);
+                glm::vec2 pos = registry.motions.get(e).position;
+                if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
+                    EntityFactory::create_level_up_orb(registry, pos, 0);
+                } else if (enemy.type == ENEMY_TYPE::CASTLE_BOSS) {
+                    EntityFactory::create_level_up_orb(registry, pos, 1);
+                } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
+                    EntityFactory::create_level_up_orb(registry, pos, 2);
+                }
+                Globals::in_boss_fight = false;
             }
             registry.remove_all_components_of(e);
         }
