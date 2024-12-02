@@ -57,6 +57,7 @@ class Application {
     StaticModel* m_dungeon_entrance;
     StaticModel* m_portal;
     StaticModel* m_sword;
+    StaticModel* m_fog_gate;
     StaticModel* m_bow;
     StaticModel* m_arrow;
     StaticModel* m_banana;
@@ -176,6 +177,12 @@ public:
         m_crystal->set_pre_transform(
             Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
             Transform::create_scaling_matrix(glm::vec3(3.0f, 3.0f, 4.0f))
+        );
+
+        m_fog_gate = new StaticModel("models/Fog Gate.stl", m_wall_shader);
+        m_fog_gate->set_pre_transform(
+            Transform::create_translation_matrix(glm::vec3(0.0f, 0.0f, -0.01f)) *
+            Transform::create_scaling_matrix(glm::vec3(0.2f, 0.3f, 0.2f))
         );
 
         // m_bmw = new StaticModel("models/BMW.obj", m_wall_shader);
@@ -1520,6 +1527,12 @@ private:
                 m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
                 m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
                 m_level_up_orb->draw();
+            } else if (static_object.type == STATIC_OBJECT_TYPE::LEVEL_UP_ORB) {
+                m_wall_shader->set_uniform_3f("u_object_color", { 0.75f, 0.75f, 0.75f });
+                m_fog_gate->set_position_x(motion.position.x);
+                m_fog_gate->set_position_y(motion.position.y);
+                m_fog_gate->set_rotation_z(motion.angle);
+                m_fog_gate->draw();
             }
         }
 
@@ -1528,12 +1541,11 @@ private:
         // // float z = 0.0f;
         // for (auto ewqrqf : {1}) {
         //     m_wall_shader->set_uniform_3f("u_object_color", { 1.0f, 1.0f, 1.0f });
-        //     m_level_up_orb->set_position_x(x + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-            
-        //     m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
-        //     m_level_up_orb->set_scale(glm::vec3(1.0f + 0.2f * std::cos(float(m_timer.GetTime()) * 0.000001f)));
-        //     m_level_up_orb->draw();
+        //     m_fog_gate->set_position_x(x);
+        //     // m_level_up_orb->set_position_y(y + 0.2f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_level_up_orb->set_position_z(1.0f + 0.3f * std::sin(float(m_timer.GetTime()) * 0.000001f));
+        //     // m_fog_gate->set_scale(glm::vec3(1.0f));
+        //     m_fog_gate->draw();
         //     x += 50;
         // }
         // change colour back lol
