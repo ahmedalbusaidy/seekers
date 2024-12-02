@@ -44,7 +44,7 @@ public:
 
             MapCreatorSystem::populate_open_world_map(registry);
 
-            EntityFactory::create_some_static(registry, glm::vec2(0.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
+            EntityFactory::create_some_static(registry, glm::vec2(-10.0f, 0.0f), PI/2.0f, STATIC_OBJECT_TYPE::CRYSTAL);
 
             // EntityFactory::create_test_boss(registry,glm::vec2(30.0f, 0.0f)); // example of a boss being created
             // EntityFactory::create_level_up_orb(registry, glm::vec2(0.0f, 150.0f), 0);
