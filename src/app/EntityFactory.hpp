@@ -411,11 +411,12 @@ namespace EntityFactory {
     }
 
     // needs new static type
-    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0, glm::vec3 colour = glm::vec3(1.0f)) {
+    inline Entity create_portal(Registry& registry, glm::vec2 position, INTERACTABLE_TYPE type, int dungeon_difficulty = 0, glm::vec3 colour = glm::vec3(1.0f), float angle = 0.0f) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
         motion.position = position;
+        motion.angle = angle;
         motion.scale = glm::vec2(1.5f);
 
         auto& team = registry.teams.emplace(entity);

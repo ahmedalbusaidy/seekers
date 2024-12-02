@@ -71,10 +71,13 @@ namespace GameplaySystem {
                 glm::vec2 pos = registry.motions.get(e).position;
                 if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
                     EntityFactory::create_level_up_orb(registry, pos, 0);
+                    EntityFactory::create_portal(registry, {73, 50}, INTERACTABLE_TYPE::DUNGEON_EXIT, 0, glm::vec3(1.0f), PI);
                 } else if (enemy.type == ENEMY_TYPE::CASTLE_BOSS) {
                     EntityFactory::create_level_up_orb(registry, pos, 1);
+                    EntityFactory::create_portal(registry, {123, 100}, INTERACTABLE_TYPE::DUNGEON_EXIT, 0, glm::vec3(1.0f), PI);
                 } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
                     EntityFactory::create_level_up_orb(registry, pos, 2);
+                    EntityFactory::create_portal(registry, {98, 225}, INTERACTABLE_TYPE::DUNGEON_EXIT, 0, glm::vec3(1.0f), PI);
                 }
                 Globals::in_boss_fight = false;
             }
