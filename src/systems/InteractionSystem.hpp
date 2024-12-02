@@ -1,4 +1,5 @@
 #pragma once
+#include "systems/SaveLoadSystem.hpp"
 
 namespace InteractionSystem {
     inline void update_near_interactable() {
@@ -80,7 +81,7 @@ namespace InteractionSystem {
             MapManager::get_instance().return_open_world_flag = true;
         } else if (comp.type == INTERACTABLE_TYPE::BONFIRE) {
             GameplaySystem::rest();
-            // save the game here or inside rest function
+            SaveLoadSystem::get_instance().save_game(registry);
         } else if (comp.type == INTERACTABLE_TYPE::ITEM_PICKUP) {
             if (registry.level_ups.has(comp.entity)) {
                 GameplaySystem::consume_level_orb(registry.level_ups.get(comp.entity));

@@ -98,6 +98,9 @@ class Application {
 
     Timer m_timer;
     float m_delta_time_s;
+
+    bool m_has_save = false;
+
 public:
     Application() : m_light_pos(1.0f, 1.0f, 2.0f) {
         // Setup
@@ -1248,15 +1251,32 @@ public:
     }
     
     void load() { 
-        std::cout << "Mentally cheeeecked out" << std::endl;
-        if (!m_game_in_session) {
-            m_game_in_session = true;
-            _add_resume_to_menu();
+        if (SaveLoadSystem::get_instance().load_game(MapManager::get_instance().get_active_registry())) {
+            std::cout << "Game loaded successfully" << std::endl;
+            if (!m_game_in_session) {
+                m_game_in_session = true;
+                _add_resume_to_menu();
+            }
+            unpause();  // Unpause after loading
+        } else {
+            std::cout << "No save file found or load failed" << std::endl;
         }
     }
 
     void quit() { 
         m_renderer->terminate();
+    }
+
+    void new_game() {
+        // Reset all registries and initialize new game
+        MapManager::get_instance().restart_maps();
+        MapManager::get_instance().initialize_maps();
+        
+        if (!m_game_in_session) {
+            m_game_in_session = true;
+            _add_resume_to_menu();
+        }
+        unpause();
     }
 
 private:
@@ -2180,19 +2200,7 @@ private:
         );
     }
 
-    void _init_menu() {
-        main_menu = std::make_unique<Menu>("menu/home.png");
-        main_menu->add_element(
-            std::make_unique<MyButton>(
-                &m_square_mesh,
-                glm::vec2(0, _button_height * _button_spacing * 0.0f),
-                glm::vec2(0.25f, _button_height),
-                "",
-                m_menu_textures["newgame"],
-                m_menu_textures["hover_newgame"],
-                std::bind(&Application::unpause, this)
-            )
-        );
+    void _add_load_to_menu() {
         main_menu->add_element(
             std::make_unique<MyButton>(
                 &m_square_mesh,
@@ -2204,10 +2212,36 @@ private:
                 std::bind(&Application::load, this)
             )
         );
+    }
+
+    void _init_menu() {
+        main_menu = std::make_unique<Menu>("menu/home.png");
         main_menu->add_element(
             std::make_unique<MyButton>(
                 &m_square_mesh,
-                glm::vec2(0, _button_height * _button_spacing * -2.0f),
+                glm::vec2(0, _button_height * _button_spacing * 0.0f),
+                glm::vec2(0.25f, _button_height),
+                "",
+                m_menu_textures["newgame"],
+                m_menu_textures["hover_newgame"],
+                std::bind(&Application::new_game, this)
+            )
+        );
+
+        // Check if save exists and adjust quit button position accordingly
+        float quit_button_y_position;
+        if (SaveLoadSystem::get_instance().has_save()) {
+            _add_load_to_menu();  // Load button at -1.0f
+            quit_button_y_position = -2.0f;  // Quit button at bottom
+        } else {
+            quit_button_y_position = -1.0f;  // Quit button directly under New Game
+        }
+
+        // Quit button (position depends on save existence)
+        main_menu->add_element(
+            std::make_unique<MyButton>(
+                &m_square_mesh,
+                glm::vec2(0, _button_height * _button_spacing * quit_button_y_position),
                 glm::vec2(0.25f, _button_height),
                 "",
                 m_menu_textures["quit"],
@@ -2218,6 +2252,13 @@ private:
     }
 
     void menu_update() {
+        // Check if save state has changed
+        bool current_save_state = SaveLoadSystem::get_instance().has_save();
+        if (current_save_state != m_has_save) {
+            m_has_save = current_save_state;
+            _refresh_menu();
+        }
+
         if (glfwGetMouseButton((GLFWwindow *)m_renderer->get_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             double mouse_x, mouse_y;
             glfwGetCursorPos((GLFWwindow *)m_renderer->get_window(), &mouse_x, &mouse_y);
@@ -2238,6 +2279,14 @@ private:
         // main_menu->update(100, 200);
 
         // m_renderer->
+    }
+
+    void _refresh_menu() {
+        main_menu = std::make_unique<Menu>("menu/home.png");
+        _init_menu();
+        if (m_game_in_session) {
+            _add_resume_to_menu();
+        }
     }
 
     //helpers
