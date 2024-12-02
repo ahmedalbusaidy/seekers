@@ -143,7 +143,9 @@ void World::step(float elapsed_ms) {
     // 1. Update physics
     // {
     // Timer timer;
-    GridMapSystem::update_grid_map();
+    if (!Globals::in_boss_fight) {
+        GridMapSystem::update_grid_map();
+    }
     // }
 
     PhysicsSystem::step(elapsed_ms);
@@ -154,8 +156,11 @@ void World::step(float elapsed_ms) {
 
     m_audioSystem.handle_audio_per_frame();
 
-    AISystem::AI_step();
-    AISystem::boss_AI_step(elapsed_ms); // conditional this for with in_boss_fight flag
+    if (Globals::in_boss_fight) {
+        AISystem::boss_AI_step(elapsed_ms);
+    } else {
+        AISystem::AI_step();
+    }
 
     InputManager::handle_inputs_per_frame();
 
