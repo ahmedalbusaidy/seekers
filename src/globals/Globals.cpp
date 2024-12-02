@@ -29,4 +29,5 @@ namespace Globals {
     bool after_pause = false;
     glm::vec2 desired_camera_position = glm::vec2(0.0f);
     bool display_stats = true;
+    bool in_boss_fight = false;
 }
