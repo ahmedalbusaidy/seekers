@@ -1629,8 +1629,8 @@ private:
                 );
                 continue;
             }
-            const float health_percentage = loco.health / loco.max_health;
-
+            float health_percentage = loco.health / loco.max_health;
+            if (loco.health < 0.0f) {health_percentage = 0.0f};
             // Red health bar layer
             float z_index = 1.1;
             glm::vec3 health_bar_pos;
@@ -1794,6 +1794,9 @@ private:
         auto& reg = MapManager::get_instance().get_active_registry();
         auto& player_loco = reg.locomotion_stats.get(reg.player);
         float health_percentage = player_loco.health / player_loco.max_health;
+        if (player_loco.health < 0.0f) {
+            health_percentage = 0.0f;
+        }
         float energy_percentage = player_loco.energy / player_loco.max_energy;
         float size = 0.25;
 
@@ -2089,6 +2092,13 @@ private:
                     Globals::is_getting_up = false;
                 }
             } else if (reg.stagger_cooldowns.has(entity)) {
+                if (reg.player == entity) {
+                    if (reg.in_rests.has(reg.player)) {
+                        reg.in_rests.remove(reg.player);
+                    }
+                    Globals::is_getting_up = false;
+                    m_player_was_in_rest = false;
+                }
                 const auto& cooldown = reg.stagger_cooldowns.get(entity);
                 model->force_play_animation("Stagger.dae", cooldown.timer + buffer_time);
             } else if (reg.death_cooldowns.has(reg.player)) {
