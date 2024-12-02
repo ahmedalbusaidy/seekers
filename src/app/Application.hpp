@@ -1629,8 +1629,8 @@ private:
                 );
                 continue;
             }
-            const float health_percentage = loco.health / loco.max_health;
-
+            float health_percentage = loco.health / loco.max_health;
+            if (loco.health < 0.0f) {health_percentage = 0.0f};
             // Red health bar layer
             float z_index = 1.1;
             glm::vec3 health_bar_pos;
@@ -1794,6 +1794,9 @@ private:
         auto& reg = MapManager::get_instance().get_active_registry();
         auto& player_loco = reg.locomotion_stats.get(reg.player);
         float health_percentage = player_loco.health / player_loco.max_health;
+        if (player_loco.health < 0.0f) {
+            health_percentage = 0.0f;
+        }
         float energy_percentage = player_loco.energy / player_loco.max_energy;
         float size = 0.25;
 
