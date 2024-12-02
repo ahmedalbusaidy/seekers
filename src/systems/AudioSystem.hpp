@@ -65,11 +65,13 @@ public:
     // load all sound
     void load_all_sound() {
         load_music("jungle.wav");
+        load_music("jungle_boss.wav");
         load_music("open_world.wav");
         load_music("castle.wav");
         load_music("cave.wav");
+        load_music("castle_boss.wav");
+        load_music("crystal_boss.wav");
         load_music("pause.wav");
-        load_music("boss.wav");
         load_sound_effect(audio_path("footstep.wav"));
         load_sound_effect(audio_path("dodge.wav"));
         load_sound_effect(audio_path("bowshot.wav"));

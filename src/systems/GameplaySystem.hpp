@@ -237,6 +237,8 @@ namespace GameplaySystem {
             registry.death_cooldowns.has(registry.player) || registry.estus_cooldowns.has(registry.player)) return;
 
         registry.estus_cooldowns.emplace(registry.player, 1.0f);
+
+        AudioSystem::get_instance().play_drink_redull(0.0001f);
     }
 
     inline void truly_consume_estus() {
@@ -247,8 +249,6 @@ namespace GameplaySystem {
         loco.health = fmin(loco.health + registry.estus.get(esti[0]).heal_amount, loco.max_health);
         registry.remove_all_components_of(esti[0]);
         esti.erase(esti.begin());
-
-        AudioSystem::get_instance().play_drink_redull(0.1f);
     }
 
     inline void rest() {
