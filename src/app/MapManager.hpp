@@ -36,9 +36,9 @@ public:
 
             // add dungeon entrance and bonfire here
             EntityFactory::create_bonfire(registry, glm::vec2(10.0f, 10.0f));
-            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0, glm::vec3(0.1f,1.0f,0.1f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, 20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 0, glm::vec3(0.0f,1.0f,0.0f));
             EntityFactory::create_portal(registry, glm::vec2(-30.0f, 0.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 1, glm::vec3(103.f/255.f,0.f/255.f,116.f/255.f));
-            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2, glm::vec3(0.0f,1.0f,1.0f));
+            EntityFactory::create_portal(registry, glm::vec2(-30.0f, -20.0f), INTERACTABLE_TYPE::DUNGEON_ENTRANCE, 2, glm::vec3(0.0f,0.7f,1.0f));
 
             EntityFactory::create_light_source(registry, {0, 0, 100}, 150, {1, 1, 0.8}, LIGHT_SOURCE_TYPE::SUN);
 
