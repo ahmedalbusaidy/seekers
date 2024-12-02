@@ -13,14 +13,6 @@
 
 using json = nlohmann::json;
 
-struct SaveSlot {
-    int id;                     // Unique incremental ID
-    std::string name;           // User-given name
-    std::string filename;       // Actual file name on disk
-    std::time_t timestamp;      // When save was created
-    std::string version;        // Game version
-};
-
 class SaveLoadSystem {
 public:
     static SaveLoadSystem& get_instance() {
@@ -28,27 +20,11 @@ public:
         return instance;
     }
 
-    std::vector<SaveSlot> list_save_slots() {
-        return save_slots;
-    }
-
-    SaveSlot create_new_slot(const std::string& name) {
-        SaveSlot slot;
-        slot.id = next_slot_id++;
-        slot.name = name;
-        slot.filename = "save_" + std::to_string(slot.id) + ".json";
-        slot.timestamp = std::time(nullptr);
-        slot.version = "1.0.0";
-        save_slots.push_back(slot);
-        save_index_file();
-        return slot;
-    }
-
-    bool save_game_to_slot(const SaveSlot& slot) {
+    bool save_game(Registry& registry) {
         try {
             json save_data;
-            save_data["version"] = slot.version;
-            save_data["timestamp"] = slot.timestamp;
+            save_data["version"] = "1.0.0";
+            save_data["timestamp"] = std::time(nullptr);
             
             // Save MapManager state using the serializer
             save_data["map_manager"] = MapManagerSerializer::serialize_map_manager(MapManager::get_instance());
@@ -59,7 +35,7 @@ public:
                 mkdir("saves", 0777);
             #endif
             
-            std::ofstream file("saves/" + slot.filename);
+            std::ofstream file("saves/save.json");
             file << std::setw(4) << save_data << std::endl;
             return true;
         } catch (const std::exception& e) {
@@ -68,11 +44,11 @@ public:
         }
     }
 
-    bool load_game_from_slot(const SaveSlot& slot) {
+    bool load_game(Registry& registry) {
         try {
-            std::ifstream file("saves/" + slot.filename);
+            std::ifstream file("saves/save.json");
             if (!file.is_open()) {
-                Log::log_info("Save file not found: " + slot.filename, __FILE__, __LINE__);
+                Log::log_info("No save file found", __FILE__, __LINE__);
                 return false;
             }
 
@@ -85,7 +61,7 @@ public:
             }
             
             // Version check
-            if (save_data["version"] != slot.version) {
+            if (save_data["version"] != "1.0.0") {
                 Log::log_warning("Save version mismatch", __FILE__, __LINE__);
             }
             
@@ -99,113 +75,13 @@ public:
         }
     }
 
-    // Static methods for direct access
-    static bool save_game(Registry& registry, const std::string& save_name="untitled") {
-        auto& instance = get_instance();
-        SaveSlot slot = instance.create_new_slot(save_name);
-        return instance.save_game_to_slot(slot);
-    }
-
-    static bool load_latest_game(Registry& registry) {
-        const auto& slots = get_instance().list_save_slots();
-        if (slots.empty()) {
-            Log::log_info("No save slots found (SaveLoadSystem::load_latest_game)", __FILE__, __LINE__);
-            return false;
-        }
-
-        // Find slot with latest timestamp
-        const SaveSlot* latest_slot = &slots[0];
-        for (const auto& slot : slots) {
-            if (slot.timestamp > latest_slot->timestamp) {
-                latest_slot = &slot;
-            }
-        }
-        
-        return load_game(registry, latest_slot->name);
-    }
-
-    static bool load_game(Registry& registry, const std::string& save_name="") {
-        if (save_name.empty()) {
-            return load_latest_game(registry);
-        }
-
-        // Find existing slot with matching name
-        const auto& slots = get_instance().list_save_slots();
-        for (const auto& slot : slots) {
-            if (slot.name == save_name) {
-                return get_instance().load_game_from_slot(slot);
-            }
-        }
-
-        Log::log_info("No save slot found with name: " + save_name, __FILE__, __LINE__);
-        return false;
+    bool has_save() {
+        std::ifstream file("saves/save.json");
+        return file.good();
     }
 
 private:
-    SaveLoadSystem() {
-        load_index_file();
-    }
-
-    std::vector<SaveSlot> save_slots;
-    int next_slot_id = 0;
-
-    void save_index_file() {
-        try {
-        #ifdef _WIN32
-            _mkdir("saves");
-        #else
-            mkdir("saves", 0777);
-        #endif
-
-        json index;
-            index["next_slot_id"] = next_slot_id;
-            
-            std::vector<json> slots_data;
-            for (const auto& slot : save_slots) {
-                slots_data.push_back({
-                    {"id", slot.id},
-                    {"name", slot.name},
-                    {"filename", slot.filename},
-                    {"timestamp", slot.timestamp},
-                    {"version", slot.version}
-                });
-            }
-            index["slots"] = slots_data;
-            
-            std::ofstream file("saves/index.json");
-            file << std::setw(4) << index << std::endl;
-        } catch (const std::exception& e) {
-            Log::log_warning("Failed to save index file (SaveLoadSystem::save_index_file): " + std::string(e.what()), __FILE__, __LINE__);
-        }
-    }
-
-    void load_index_file() {
-        try {
-            std::ifstream file("saves/index.json");
-            if (!file.is_open()) {
-                next_slot_id = 0;
-                save_slots.clear();
-                return;
-            }
-
-            json index = json::parse(file);
-            next_slot_id = index["next_slot_id"];
-            save_slots.clear();
-            
-            for (const auto& slot_data : index["slots"]) {
-                SaveSlot slot{
-                    slot_data["id"],
-                    slot_data["name"],
-                    slot_data["filename"],
-                    slot_data["timestamp"],
-                    slot_data["version"]
-                };
-                save_slots.push_back(slot);
-            }
-        } catch (const std::exception& e) {
-            Log::log_warning("Failed to load index file (SaveLoadSystem::load_index_file): " + std::string(e.what()), __FILE__, __LINE__);
-            next_slot_id = 0;
-            save_slots.clear();
-        }
-    }
+    SaveLoadSystem() = default;
+    SaveLoadSystem(const SaveLoadSystem&) = delete;
+    void operator=(const SaveLoadSystem&) = delete;
 };
