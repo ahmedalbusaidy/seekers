@@ -373,7 +373,7 @@ public:
             Transform::create_model_matrix(
                 glm::vec3(0),
                 glm::vec3(PI / 2, 0, PI / 2),
-                glm::vec3(0.04)
+                glm::vec3(0.02f)
             )
         );
         vampire.print_bones();
@@ -396,7 +396,7 @@ public:
             Transform::create_model_matrix(
                 glm::vec3(0),
                 glm::vec3(PI / 2, 0, PI / 2),
-                glm::vec3(0.04)
+                glm::vec3(0.02f)
             )
         );
         nightshade.print_bones();
@@ -1391,7 +1391,7 @@ private:
         delete m_map_texture;
 
         m_skybox_texture = new SkyboxTexture(map_manager.sky_texture_name);
-        m_wall_texture = new Texture2D(map_manager.floor_texture_name);
+        m_wall_texture = new Texture2D(map_manager.wall_texture_name);
         m_map_texture = new Texture2D(map_manager.floor_texture_name);
     }
 
