@@ -324,7 +324,7 @@ public:
         hero.print_animations();
 #pragma endregion
 
-#pragma region WARRIOR
+#pragma region JUNGLE BOSS
         AnimatedModel warrok("models/Warrok/Warrok.dae", &animated_shader);
         warrok.load_animation_from_file("models/Warrok/Left.dae");
         warrok.load_animation_from_file("models/Warrok/Right.dae");
@@ -345,6 +345,29 @@ public:
         );
         warrok.print_bones();
         warrok.print_animations();
+#pragma endregion
+
+#pragma region CRYSTAL BOSS
+        AnimatedModel mutant("models/Mutant/Mutant.dae", &animated_shader);
+        mutant.load_animation_from_file("models/Warrok/Left.dae");
+        mutant.load_animation_from_file("models/Warrok/Right.dae");
+        mutant.load_animation_from_file("models/Warrok/Backward.dae");
+        mutant.load_animation_from_file("models/Warrok/Forward.dae");
+        mutant.load_animation_from_file("models/Warrok/Roll.dae");
+        mutant.load_animation_from_file("models/Warrok/Standing Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Running Attack.dae");
+        mutant.load_animation_from_file("models/Warrok/Dying.dae");
+        mutant.load_animation_from_file("models/Warrok/Stagger.dae");
+        mutant.load_animation_from_file("models/Warrok/Dance.dae");
+        mutant.set_pre_transform(
+            Transform::create_model_matrix(
+                glm::vec3(0),
+                glm::vec3(PI / 2, 0, PI / 2),
+                glm::vec3(0.04)
+            )
+        );
+        mutant.print_bones();
+        mutant.print_animations();
 #pragma endregion
 
 #pragma region WARRIOR
@@ -506,6 +529,9 @@ public:
                         );
                     } else if (enemy.type == ENEMY_TYPE::JUNGLE_BOSS) {
                         m_models[entity.get_id()] = new AnimatedModel(warrok, counter++);
+                        const auto& model = m_models[entity.get_id()];
+                    } else if (enemy.type == ENEMY_TYPE::CAVE_BOSS) {
+                        m_models[entity.get_id()] = new AnimatedModel(mutant, counter++);
                         const auto& model = m_models[entity.get_id()];
                     } else {
                         m_models[entity.get_id()] = new AnimatedModel(zombie_grunt, counter++);
