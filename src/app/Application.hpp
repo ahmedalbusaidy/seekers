@@ -2089,6 +2089,10 @@ private:
                     Globals::is_getting_up = false;
                 }
             } else if (reg.stagger_cooldowns.has(entity)) {
+                if (reg.player == entity) {
+                    Globals::is_getting_up = false;
+                    m_player_was_in_rest = false;
+                }
                 const auto& cooldown = reg.stagger_cooldowns.get(entity);
                 model->force_play_animation("Stagger.dae", cooldown.timer + buffer_time);
             } else if (reg.death_cooldowns.has(reg.player)) {
