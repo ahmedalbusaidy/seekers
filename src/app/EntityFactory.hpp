@@ -103,7 +103,7 @@ namespace EntityFactory {
         Entity enemy_weapon;
         if (enemy_type == ENEMY_TYPE::ZOMBIE) {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::PUNCH);
-        } else if (enemy_type == ENEMY_TYPE::ARCHER) {
+        } else if (enemy_type == ENEMY_TYPE::ARCHER || enemy_type == ENEMY_TYPE::CAVE_ARCHER) {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::BOW);
         } else {
             enemy_weapon = EntityFactory::create_weapon(registry, position, 5.0f, 0.5f, WEAPON_TYPE::SWORD);
@@ -135,6 +135,10 @@ namespace EntityFactory {
         projectile.poise_points = weapon.poise_points;
         projectile.enchantment = ENCHANTMENT::NONE;
         projectile.projectile_type = weapon.projectile_type;
+        
+        if (Globals::difficulty == 2 && projectile.projectile_type == PROJECTILE_TYPE::ARROW) {
+            projectile.projectile_type = PROJECTILE_TYPE::MAGIC;
+        }
 
         auto& team = registry.teams.emplace(entity);
         team.team_id = team_id;

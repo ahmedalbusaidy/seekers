@@ -143,14 +143,17 @@ private:
             floor_texture_name = "ground.jpg";
         } else if (theme == "Dungeon") {
             if (dungeon_difficulty == 0) {
+                Globals::difficulty = 0;
                 sky_texture_name = "random_skybox.png";
                 wall_texture_name = "jungle_tile_1.jpg";
                 floor_texture_name = "jungle_tile_1.jpg";
             } else if (dungeon_difficulty == 1) {
+                Globals::difficulty = 1;
                 sky_texture_name = "SkyboxDark.png";
                 wall_texture_name = "tileset_1.png";
                 floor_texture_name = "tileset_7.png";
             } else if (dungeon_difficulty == 2) {
+                Globals::difficulty = 2;
                 sky_texture_name = "SkyboxDark.png";
                 wall_texture_name = "crystal_wall.png";
                 floor_texture_name = "crystal_floor.png";

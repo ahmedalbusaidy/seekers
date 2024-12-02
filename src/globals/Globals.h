@@ -42,4 +42,5 @@ namespace Globals {
     extern glm::vec2 desired_camera_position;
     extern bool display_stats;
     extern bool in_boss_fight;
+    extern int difficulty;
 }
