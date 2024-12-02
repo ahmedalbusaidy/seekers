@@ -1572,6 +1572,12 @@ private:
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
                 m_wall_shader->set_uniform_3f("u_object_color", { 153.0f/255.0f, 102.0f/255.0f, 151.0f/255.0f });
                 m_arrow->draw();
+            } else if (projectile.projectile_type == PROJECTILE_TYPE::MAGIC) {
+                m_level_up_orb->set_position(glm::vec3(motion.position, 2.0f));
+                m_level_up_orb->set_rotation_z(motion.angle);
+                m_level_up_orb->set_rotation_z(motion.angle);
+                m_wall_shader->set_uniform_3f("u_object_color", { 180.0f/255.0f, 180.0f/255.0f, 255.0f/255.0f });
+                m_level_up_orb->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
                 m_banana->set_rotation_z(motion.angle);
