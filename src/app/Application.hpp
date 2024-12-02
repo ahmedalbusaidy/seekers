@@ -2090,6 +2090,9 @@ private:
                 }
             } else if (reg.stagger_cooldowns.has(entity)) {
                 if (reg.player == entity) {
+                    if (reg.in_rests.has(reg.player)) {
+                        reg.in_rests.remove(reg.player);
+                    }
                     Globals::is_getting_up = false;
                     m_player_was_in_rest = false;
                 }
