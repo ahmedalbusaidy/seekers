@@ -45,9 +45,6 @@ namespace InputManager {
         if (Globals::is_getting_up || registry.in_rests.has(registry.player)) return;
 
         if (action == GLFW_PRESS) {
-            if (key == GLFW_KEY_Z) {
-                Globals::is_3d_mode = !Globals::is_3d_mode;
-            }
             if (key == GLFW_KEY_W) {
                 registry.input_state.w_down = true;
                 TutorialSystem::pass_movements();
