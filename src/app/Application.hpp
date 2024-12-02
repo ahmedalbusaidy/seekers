@@ -373,7 +373,7 @@ public:
             Transform::create_model_matrix(
                 glm::vec3(0),
                 glm::vec3(PI / 2, 0, PI / 2),
-                glm::vec3(0.04)
+                glm::vec3(0.02f)
             )
         );
         vampire.print_bones();
@@ -396,7 +396,7 @@ public:
             Transform::create_model_matrix(
                 glm::vec3(0),
                 glm::vec3(PI / 2, 0, PI / 2),
-                glm::vec3(0.04)
+                glm::vec3(0.02f)
             )
         );
         nightshade.print_bones();
@@ -1391,7 +1391,7 @@ private:
         delete m_map_texture;
 
         m_skybox_texture = new SkyboxTexture(map_manager.sky_texture_name);
-        m_wall_texture = new Texture2D(map_manager.floor_texture_name);
+        m_wall_texture = new Texture2D(map_manager.wall_texture_name);
         m_map_texture = new Texture2D(map_manager.floor_texture_name);
     }
 
@@ -1572,6 +1572,12 @@ private:
                 m_arrow->set_rotation_x(m_arrow->get_rotation_x() + PI / 8);
                 m_wall_shader->set_uniform_3f("u_object_color", { 153.0f/255.0f, 102.0f/255.0f, 151.0f/255.0f });
                 m_arrow->draw();
+            } else if (projectile.projectile_type == PROJECTILE_TYPE::MAGIC) {
+                m_level_up_orb->set_position(glm::vec3(motion.position, 2.0f));
+                m_level_up_orb->set_rotation_z(motion.angle);
+                m_level_up_orb->set_rotation_z(motion.angle);
+                m_wall_shader->set_uniform_3f("u_object_color", { 180.0f/255.0f, 180.0f/255.0f, 255.0f/255.0f });
+                m_level_up_orb->draw();
             } else {
                 m_banana->set_position(glm::vec3(motion.position, 2.0f));
                 m_banana->set_rotation_z(motion.angle);
