@@ -8,161 +8,176 @@ Seekers is a third person 3D action RPG that melds dungeon crawling with open-wo
 
 ### Key Features
 
-- **Open World & Dungeon System**: Explore a vast open world and venture into procedurally generated dungeons
-- **Dynamic Combat System**: Engage in skill-based, real-time battles with enemy lock-on mechanics
-- **Save/Load System**: Save your progress and continue your adventure later
-- **Health Management**: Use potions to restore health and rest at bonfires
-- **Rich Animation System**: Fluid character animations including sitting and combat moves
-- **Dynamic Lighting**: Real-time lighting with environment-specific skyboxes
+- **Dynamic Combat System**: 
+  - Skill-based real-time combat with enemy lock-on
+  - Attack buildup and combo system
+  - Dodge-roll mechanics with i-frames
+  - Estus flask healing system with cooldown
+  - Damage scaling based on stats
+
+- **Progression System**:
+  - Level-up orbs with randomized stat improvements
+  - Multiple character stats (Health, Energy, Defense, Power, etc.)
+  - Upgradeable healing capacity
+  - Persistent character progression
+
+- **World System**:
+  - Vast open world hub area
+  - Three unique dungeon themes (Jungle, Castle, Crystal)
+  - Procedurally generated dungeons
+  - Dynamic lighting system
+  - Environmental variety with interactive objects
+
+- **Boss System**:
+  - Unique themed bosses for each dungeon type
+  - Complex AI behavior patterns
+  - Multiple attack patterns and phases
+  - Distinctive visual designs
+
+- **Technical Features**:
+  - Robust save/load system with auto-save
+  - Comprehensive menu system
+  - Cross-platform compatibility
+  - Memory-efficient design
+  - Stable frame rate performance
 
 ### Game Controls
 
-- **Movement**: WASD keys
-  - W: Move forward
-  - A: Move left
-  - S: Move backward
-  - D: Move right
-- **Camera Control**: Mouse Movement
-- **Combat**:
-  - Left Mouse Button: Attack
-  - Right Mouse Button: Lock-on to enemy
-  - Spacebar: Dodge
-- **Interaction**:
-  - F: Interact with objects (bonfire, portal)
-  - 1: Use health potion
-- **System**:
-  - F5: Save game
-  - F6: Load game
-  - Z: Quit game
+#### Basic Movement
+- **WASD**: Movement
+- **Mouse**: Camera control
+- **Space**: Dodge roll
+- **H**: Toggle stats display
+
+#### Combat
+- **Left Mouse**: Attack
+- **Right Mouse**: Lock-on target
+- **1**: Use healing flask (Estus)
+
+#### Interaction
+- **F**: Interact with objects/entrances (Bonfires, Doors, etc.)
+- **ESC**: Pause menu
+
+#### System
+- **F5**: Quick save
+- **F6**: Quick load
 
 ### Project Structure
 
-- `src/`: Source code
-  - `app/`: Core application logic (World, EntityFactory, InputManager)
-  - `components/`: ECS components (AI, Combat, Physics, Render, etc.)
-  - `ecs/`: Entity Component System implementation
-  - `globals/`: Global variables and constants
-  - `renderer/`: OpenGL rendering utilities
-  - `systems/`: Game systems (Collision, Gameplay, Physics)
-  - `shaders/`: GLSL shader files
-  - `textures/`: Game textures and sprites
-  - `utils/`: Utility functions and classes
-  - `main.cpp`: Entry point of the application
-- `doc/`: Documentation files
-- `CMakeLists.txt`: CMake build configuration
+```
+src/
+├── app/                 # Core application logic
+├── components/         # Game components (Combat, AI, Physics)
+├── ecs/               # Entity Component System
+├── globals/           # Global variables and constants
+├── renderer/          # Graphics and rendering
+├── systems/           # Game systems (AI, Combat, Physics)
+├── utils/            # Utility functions
+└── main.cpp          # Entry point
+```
 
-## Milestone 3 Implementation Details
+## Milestone 4 Implementation Details
 
-### Mandatory Requirements (60%)
+### Mandatory Requirements (70%)
 
 #### Playability (15%) ✓
+- 10+ minutes of non-repetitive gameplay
+- Three unique dungeon themes
+- Multiple boss encounters
+- Progressive difficulty scaling
 
-1. **Extended Gameplay**
-   - Non-repetitive gameplay for 5+ minutes
-   - Seamless world transitions
-   - Dynamic enemy encounters
-   - Progressive difficulty scaling
+#### Stability (15%) ✓
+- Cross-platform compatibility
+- Consistent performance
+- Memory optimization
+- Robust error handling
 
-2. **Feature Integration**
-   - Intuitive control scheme
-   - Clear visual feedback
-   - Smooth gameplay flow
-   - Consistent mechanics
+#### User Experience (10%) ✓
+- Self-explanatory tutorial system
+- Intuitive UI/HUD elements
+- Responsive controls
+- Clear visual feedback
 
 #### Robustness (15%) ✓
+- Efficient memory management
+- Stable frame rate
+- Graceful error handling
+- Robust input system
 
-1. **Memory Management (5%)**
-   - Efficient resource allocation
-   - Proper cleanup of assets
-   - Optimized asset loading
-   - Memory usage monitoring
+#### Reporting (15%) ✓
+- Comprehensive bug tracking
+- Detailed test plan
+- Video demonstration
+- User feedback implementation
 
-2. **User Input (5%)**
-   - Robust input handling
-   - Window management
-   - Focus handling
-   - Error recovery
+### Creative Components (30%)
 
-3. **Performance (5%)**
-   - Consistent frame rate
-   - Optimized rendering
-   - Efficient state management
-   - Smooth transitions
+#### Reloadability (10%) ✓
+- Complete game state serialization
+- JSON-based save file system
+- Multiple save slots support
+- Automatic saving at rest points
+- Full entity/component preservation
+- Test path: `src/systems/SaveLoadSystem.hpp`
 
-#### Stability (20%) ✓
+#### Advanced Decision Making (10%) ✓
+- Complex boss AI with multiple attack patterns
+- Goal-based enemy behavior
+- Dynamic difficulty scaling
+- Advanced pathfinding for enemies
+- Coordinated enemy positioning
+- Test path: `src/systems/AISystem.hpp`
 
-1. **Core Systems**
-   - Stable save/load system
-   - Reliable world transitions
-   - Consistent combat mechanics
-   - Proper resource management
+#### Audio System (10%) ✓
+- Context-sensitive combat sounds
+- Environmental audio feedback
+- Distance-based audio scaling
+- Theme-specific background music
+- Interactive sound effects
+- Test path: `src/systems/AudioSystem.hpp`
 
-2. **Technical Stability**
-   - Cross-platform compatibility
-   - Resolution independence
-   - Graceful error handling
-   - Crash prevention
+### Implementation Details
 
-#### Reporting (10%) ✓
-- Comprehensive test plan
-- Updated bug tracking
-- Feature demonstration video
+1. **Save/Load System**
+   - Human-readable JSON save files
+   - Complete entity serialization
+   - Component state preservation
+   - Registry management
+   - Checkpoint system at bonfires
 
-### Creative Component (40%)
+2. **AI Decision Making**
+   - Boss combat patterns
+   - Enemy coordination
+   - Advanced pathfinding
+   - Dynamic difficulty adjustment
+   - Contextual behavior selection
 
-#### Save/Load System (10%) ✓
-- **Implementation**: `src/systems/SaveLoadSystem.hpp`
-  - Complete game state preservation
-  - Multiple save slots
-  - Robust error handling
-  - State verification
-
-#### Complex Prescribed Motion (10%) ✓
-- **Implementation**: `src/systems/AnimationSystem.hpp`
-  - Bonfire rest animation
-  - Smooth transition animations
-  - Contextual movement sets
-  - Blended animations
-
-#### Environment System (20%) ✓
-
-1. **Open World**
-   - Vast explorable area
-   - Interactive elements
-   - Dynamic lighting
-   - Atmospheric effects
-
-2. **Dungeon System**
-   - Procedural generation
-   - Unique lighting system
-   - Custom skybox themes
-   - Light orb placement
-
-3. **World Transitions**
-   - Seamless loading
-   - State preservation
-   - Visual transitions
-   - Audio adaptation
+3. **Audio Implementation**
+   - Combat feedback system
+   - Environmental ambience
+   - Musical theme transitions
+   - Distance-based audio
+   - Interactive sound effects
 
 ### Additional Features
 
-1. **Enhanced Combat**
-   - Enemy lock-on system
-   - Tactical positioning
-   - Visual targeting
-   - Combat feedback
+#### Combat Enhancements
+- Attack buildup system
+- Damage scaling
+- Dodge cancellation
+- Estus cooldown system
 
-2. **Health System**
-   - Health potion management
-   - Bonfire restoration
-   - Visual health feedback
-   - Resource management
+#### World Design
+- Themed dungeons
+- Open world hub area
+- Environmental objects
+- Dynamic lighting
 
-3. **Interaction System**
-   - Context-sensitive prompts
-   - Multiple interaction types
-   - Clear feedback
-   - State-based interactions
+#### Technical Improvements
+- Enhanced save system
+- Menu system
+- Performance optimization
+- Memory management
 
 ## Acknowledgments
 
