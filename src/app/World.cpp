@@ -171,7 +171,8 @@ void World::step(float elapsed_ms) {
             m_audioSystem.start_music();
         }
     } else {
-        AISystem::AI_step();
+        AISystem::update_player_vision(elapsed_ms);
+        AISystem::AI_step(elapsed_ms);
     }
 
     InputManager::handle_inputs_per_frame();

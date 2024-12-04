@@ -53,7 +53,7 @@ namespace EntityFactory {
         } else if (weapon_type == WEAPON_TYPE::SWORD) {
             weapon.range = 10.0f;
         } else {
-            weapon.range = 5.0f;
+            weapon.range = 7.0f;
         }
         weapon.proj_speed = 50.0f;
         weapon.attack_cooldown = attack_cooldown;
@@ -472,6 +472,13 @@ namespace EntityFactory {
         motion2.scale = glm::vec2(1.5f);
         auto& model2 = registry.static_objects.emplace(entity2);
         model2.type = STATIC_OBJECT_TYPE::FOG_WALL;
+
+        // a light source for looks
+        auto& light_source = registry.light_sources.emplace(entity);
+        light_source.brightness = 2.0f;
+        light_source.colour = glm::vec3(1.0f, 215.0f/255.0f, 0.0f);
+        // light_source.pos = glm::vec3(position.x, position.y - 0.3, 4.0f);
+        light_source.pos = glm::vec3(position.x, position.y, 0.5f);
 
         return entity;
     }

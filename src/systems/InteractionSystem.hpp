@@ -92,7 +92,7 @@ namespace InteractionSystem {
             if (!Globals::in_boss_fight) {
                 if (registry.boss_ais.entities.size() > 0) Globals::in_boss_fight = true;
                 Motion& motion = registry.motions.get(registry.player);
-                motion.position += 5.0f * glm::vec2(cos(motion.angle), sin(motion.angle));
+                motion.position += 7.0f * glm::vec2(cos(motion.angle), sin(motion.angle));
             }
         }
     }

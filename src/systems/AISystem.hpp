@@ -15,8 +15,8 @@ namespace AISystem
     inline void update_player_vision(float elapsed_ms) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
-        for (Entity& e : registry.ais.entities) {
-            if (!registry.near_players.has(e)) {
+        for (Entity& e : registry.near_players.entities) {
+            if (!registry.ais.has(e)) {
                 continue;
             }
             Motion& motion = registry.motions.get(e);
@@ -38,7 +38,7 @@ namespace AISystem
                 } else {
                     vision_to_player.timer -= elapsed_ms / 1000.0f;
                     if (vision_to_player.timer <= 0) {
-                        registry.attack_cooldowns.remove(e);
+                        registry.vision_to_players.remove(e);
                     }
                 }
             } else if (can_see_player) {
@@ -171,7 +171,7 @@ namespace AISystem
         update_chasing_target_position(ai);
 
         glm::vec2 ai_position = get_grid_map_coordinates(motion);
-        glm::vec2 target_position = get_grid_map_coordinates(registry.motions.get(registry.player));
+        // glm::vec2 target_position = get_grid_map_coordinates(registry.motions.get(registry.player));
         CollisionBounds& ai_box = registry.collision_bounds.get(e);
         
         // Get radius for pathfinding - assume circle collider
@@ -188,6 +188,7 @@ namespace AISystem
         );
 
         glm::vec2 new_position = get_position_from_grid_map_coordinates(next_position.x, next_position.y);
+        new_position = glm::vec2(new_position.x + 0.5f, new_position.y + 0.5f); // no logic behind this line
 
         glm::vec2 dir = Common::normalize(new_position - motion.position);
         motion.velocity = registry.locomotion_stats.get(e).movement_speed * dir;
@@ -208,7 +209,7 @@ namespace AISystem
         Attacker& attacker = registry.attackers.get(e);
 
         glm::vec2 player_position = registry.motions.get(registry.player).position;
-        glm::vec2 direction = player_position - motion.position;
+        // glm::vec2 direction = player_position - motion.position;
 
         attacker.aim = Common::normalize(player_position - motion.position);
 
@@ -222,27 +223,34 @@ namespace AISystem
         Motion& motion = registry.motions.get(e);
         AIComponent& ai = registry.ais.get(e);
         glm::vec2 player_position = registry.motions.get(registry.player).position;
-        if (glm::length(motion.position - player_position) < 20.0f) {
+        if (glm::length(motion.position - player_position) < registry.weapons.get(registry.attackers.get(e).weapon).range - 0.5f && registry.vision_to_players.has(e)) {
+            motion.velocity = glm::vec2(0.0f);
             ai.current_state = AI_STATE::ATTACK;
-        } else if (glm::length(motion.position - player_position) < 30.0f) {
+        } else if (glm::length(motion.position - player_position) < 45.0f && registry.vision_to_players.has(e)) {
             ai.current_state = AI_STATE::CHASE;
         } else {
             ai.current_state = AI_STATE::PATROL;
         }
     }
 
-    inline void AI_step() {
+    inline void AI_step(float elapsed_ms) {
         Registry& registry = MapManager::get_instance().get_active_registry();
 
         for (Entity& e : registry.near_players.entities) {
             if (registry.ais.has(e) && !registry.death_cooldowns.has(e) && !registry.stagger_cooldowns.has(e)) {
                 AIComponent &ai = registry.ais.get(e);
+                ai.update_timer -= elapsed_ms * 0.001f;
+                if (ai.update_timer <= 0.0f) {
+                    ai.update_timer = 0.25f;
+                } else {
+                    continue;
+                }
                 if (ai.current_state == AI_STATE::PATROL) {
                     AI_patrol_step(e);
                 } else if (ai.current_state == AI_STATE::CHASE) {
                     AI_chase_step(e);
                 } else if (ai.current_state == AI_STATE::ATTACK) {
-                    AI_chase_step(e);
+                    // AI_chase_step(e);
                     AI_attack_step(e);
                 }
                 AI_change_state(e);
