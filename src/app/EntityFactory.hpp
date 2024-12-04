@@ -16,8 +16,8 @@ namespace EntityFactory {
         motion.scale = glm::vec2(3.0f, 3.0f);  // Player size
 
         auto& locomotion = registry.locomotion_stats.emplace(entity);
-        locomotion.health = 200.0f;
-        locomotion.max_health = 200.0f;
+        locomotion.health = 150.0f;
+        locomotion.max_health = 150.0f;
         locomotion.movement_speed = 15.0f;
         locomotion.max_energy = 100.0f;
         locomotion.energy = locomotion.max_energy;
@@ -59,7 +59,7 @@ namespace EntityFactory {
         weapon.attack_cooldown = attack_cooldown;
         weapon.stagger_duration = 0.5f;
         weapon.poise_points = 10.0f;
-        weapon.attack_energy_cost = 10.0f; 
+        weapon.attack_energy_cost = 20.0f;
         if (weapon_type == WEAPON_TYPE::BOW) {
             weapon.projectile_type = PROJECTILE_TYPE::ARROW;
         } else {
@@ -493,7 +493,7 @@ namespace EntityFactory {
         return e;
     }
 
-    inline Entity create_boss_projectile(Registry& registry, glm::vec2 pos, float angle, glm::vec2 aim, Weapon& weapon) {
+    inline Entity create_boss_projectile(Registry& registry, glm::vec2 pos, float angle, glm::vec2 aim, Weapon& weapon, float power) {
         auto entity = Entity();
 
         auto& motion = registry.motions.emplace(entity);
@@ -503,7 +503,7 @@ namespace EntityFactory {
         motion.scale = glm::vec2(1.0f, 1.0f);  // Projectile size
 
         auto& projectile = registry.projectiles.emplace(entity);
-        projectile.damage = weapon.damage;
+        projectile.damage = weapon.damage + power * 0.01f * weapon.damage;
         projectile.range_remaining = weapon.range;
         projectile.stagger_duration = weapon.stagger_duration;
         projectile.poise_points = weapon.poise_points;
@@ -640,13 +640,14 @@ namespace EntityFactory {
         motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
 
         auto& locomotion = registry.locomotion_stats.emplace(entity);
-        locomotion.max_health = 100.0f;
+        locomotion.max_health = 200.0f;
         locomotion.health = locomotion.max_health;
         locomotion.max_energy = 1000.0f;
         locomotion.energy = locomotion.max_energy;
         locomotion.max_poise = 1000.0f;
         locomotion.poise = locomotion.max_poise;
         locomotion.movement_speed = 12.0f;
+        locomotion.power = 100.0f;
 
         auto& team = registry.teams.emplace(entity);
         team.team_id = TEAM_ID::FOW;
@@ -693,13 +694,14 @@ namespace EntityFactory {
         motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
 
         auto& locomotion = registry.locomotion_stats.emplace(entity);
-        locomotion.max_health = 100.0f;
+        locomotion.max_health = 400.0f;
         locomotion.health = locomotion.max_health;
         locomotion.max_energy = 1000.0f;
         locomotion.energy = locomotion.max_energy;
         locomotion.max_poise = 1000.0f;
         locomotion.poise = locomotion.max_poise;
         locomotion.movement_speed = 12.0f;
+        locomotion.power = 300.0f;
 
         auto& team = registry.teams.emplace(entity);
         team.team_id = TEAM_ID::FOW;
@@ -746,13 +748,14 @@ namespace EntityFactory {
         motion.scale = glm::vec2(3.0f, 3.0f);  // Enemy size
 
         auto& locomotion = registry.locomotion_stats.emplace(entity);
-        locomotion.max_health = 100.0f;
+        locomotion.max_health = 800.0f;
         locomotion.health = locomotion.max_health;
         locomotion.max_energy = 1000.0f;
         locomotion.energy = locomotion.max_energy;
         locomotion.max_poise = 1000.0f;
         locomotion.poise = locomotion.max_poise;
         locomotion.movement_speed = 12.0f;
+        locomotion.power = 600.0f;
 
         auto& team = registry.teams.emplace(entity);
         team.team_id = TEAM_ID::FOW;
