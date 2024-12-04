@@ -338,22 +338,23 @@ namespace GameplaySystem {
 
     inline void boss_attack(Entity& e, Motion& motion, Attacker& attacker, Weapon& weapon, BOSS_ATTACK_TYPE type) {
         Registry& registry = MapManager::get_instance().get_active_registry();
+        float power = registry.locomotion_stats.get(e).power;
 
         if (type == BOSS_ATTACK_TYPE::REGULAR) {
-            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon);
+            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon, power);
             registry.attack_cooldowns.emplace(e, 0.3f);
         } else if (type == BOSS_ATTACK_TYPE::LONG) {
             glm::vec2 pos0 = glm::vec2(motion.position.x - cos(motion.angle), motion.position.y - sin(motion.angle));
             glm::vec2 pos2 = glm::vec2(motion.position.x + cos(motion.angle), motion.position.y + sin(motion.angle));
-            EntityFactory::create_boss_projectile(registry, pos0, motion.angle, attacker.aim, weapon);
-            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon);
-            EntityFactory::create_boss_projectile(registry, pos2, motion.angle, attacker.aim, weapon);
+            EntityFactory::create_boss_projectile(registry, pos0, motion.angle, attacker.aim, weapon, power);
+            EntityFactory::create_boss_projectile(registry, motion.position, motion.angle, attacker.aim, weapon, power);
+            EntityFactory::create_boss_projectile(registry, pos2, motion.angle, attacker.aim, weapon, power);
             registry.attack_cooldowns.emplace(e, 0.5f);
         } else if (type == BOSS_ATTACK_TYPE::AOE) {
             for (int i = 0; i < 8; i++) {
                 float angle = motion.angle + i * PI / 4;
                 glm::vec2 aim = glm::vec2(cos(angle), sin(angle));
-                EntityFactory::create_boss_projectile(registry, motion.position, angle, aim, weapon);
+                EntityFactory::create_boss_projectile(registry, motion.position, angle, aim, weapon, power);
             }
             registry.attack_cooldowns.emplace(e, 0.5f);
         }
