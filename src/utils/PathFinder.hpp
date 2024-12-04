@@ -84,7 +84,10 @@ bool can_see(
     float next_y = current_y + dir.y;
     int occupied_cells = 0;
     while (glm::length(glm::vec2({target_x, target_y}) - glm::vec2({next_x, next_y})) >= 1) {
-        bool is_occupied = grid[int(std::round(next_x))][int(std::round(next_y))].is_occupied;
+        int i = std::round(next_x);
+        int j = std::round(next_y);
+        if (i >= grid.size() || j >= grid[0].size()) return false;
+        bool is_occupied = grid[i][j].is_occupied;
         if (is_occupied) {
             occupied_cells++;
         }
