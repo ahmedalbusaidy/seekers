@@ -1,197 +1,97 @@
 # Seekers
 
+A third-person 3D action RPG blending Soulslike combat with procedurally generated dungeon crawling. Built from scratch in C++ with a custom OpenGL renderer and Entity Component System.
+
 ## Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/hXh101_gjjw/maxresdefault.jpg)](https://www.youtube.com/watch?v=hXh101_gjjw)
 
-*Click the image above to watch the demo on YouTube*
+*Click to watch on YouTube*
 
-## Team 23: Los Pollos Hermanos Gaming
+## About
 
-Seekers is a third person 3D action RPG that melds dungeon crawling with open-world exploration. Set in the dark fantasy world of Eldoria, players take on the role of a Seeker, striving to uncover ancient secrets and restore balance to a land shrouded in darkness.
+Set in the dark fantasy world of Eldoria, players take on the role of a Seeker uncovering ancient secrets across three themed dungeons (Jungle, Castle, Crystal), each with its own boss. Originally built as a team project at UBC; this fork preserves the full commit history.
 
-### Key Features
+**Tech stack:** C++, OpenGL, SDL2, GLM, custom ECS architecture, JSON-based serialization.
 
-- **Dynamic Combat System**: 
-  - Skill-based real-time combat with enemy lock-on
-  - Attack buildup and combo system
-  - Dodge-roll mechanics with i-frames
-  - Estus flask healing system with cooldown
-  - Damage scaling based on stats
+## Features
 
-- **Progression System**:
-  - Level-up orbs with randomized stat improvements
-  - Multiple character stats (Health, Energy, Defense, Power, etc.)
-  - Upgradeable healing capacity
-  - Persistent character progression
+**Combat**
+- Real-time skill-based combat with enemy lock-on, dodge-roll i-frames, and attack combos
+- Estus flask healing with cooldown, modeled on Soulslike resource pressure
+- Stat-driven damage scaling
 
-- **World System**:
-  - Vast open world hub area
-  - Three unique dungeon themes (Jungle, Castle, Crystal)
-  - Procedurally generated dungeons
-  - Dynamic lighting system
-  - Environmental variety with interactive objects
+**World and Progression**
+- Open world hub plus three procedurally generated dungeons
+- Level-up orb system with randomized stat improvements (Health, Energy, Defense, Power)
+- Bonfire checkpoints with auto-save
 
-- **Boss System**:
-  - Unique themed bosses for each dungeon type
-  - Complex AI behavior patterns
-  - Multiple attack patterns and phases
-  - Distinctive visual designs
+**AI**
+- Boss encounters with multi-phase attack patterns and distinct behaviors per theme
+- Goal-based enemy decision making with coordinated positioning and pathfinding
 
-- **Technical Features**:
-  - Robust save/load system with auto-save
-  - Comprehensive menu system
-  - Cross-platform compatibility
-  - Memory-efficient design
-  - Stable frame rate performance
+**Systems**
+- Full game state serialization to human-readable JSON; multiple save slots
+- Context-sensitive audio: distance-attenuated SFX, theme-specific music transitions
+- Dynamic lighting and environmental interaction
 
-### Game Controls
+## My Contributions
 
-#### Basic Movement
-- **WASD**: Movement
-- **Mouse**: Camera control
-- **Space**: Dodge roll
-- **H**: Toggle stats display
+I primarily owned two systems on this project:
 
-#### Combat
-- **Left Mouse**: Attack
-- **Right Mouse**: Lock-on target
-- **1**: Use healing flask (Estus)
+**Collision Detection System** (`src/systems/CollisionSystem.hpp`, `src/components/PhysicsComponents.hpp`)
 
-#### Interaction
-- **F**: Interact with objects/entrances (Bonfires, Doors, etc.)
-- **ESC**: Pause menu
+Built the full collision pipeline from broad phase to narrow phase resolution.
 
-#### System
-- **F5**: Quick save
-- **F6**: Quick load
+- Spatial grid for broad-phase culling, reducing per-frame collision checks from O(n²) to roughly O(n) for typical entity densities.
+- Four collider primitives supported: Circle, AABB, Wall (rotated AABB with line-segment edges), and Mesh (arbitrary convex polygon).
+- Implemented all narrow-phase pair resolutions: circle-circle, circle-wall (with per-edge normal/penetration), and circle-mesh (used for projectile geometry).
+- The mesh collider pipeline was the trickiest piece: at projectile spawn, I transform a model's triangle mesh through its model matrix into 2D world space, deduplicate vertices, sort them counter-clockwise around the centroid to form a convex hull, and compute a bounding radius for broad-phase rejection. This lets arrows collide with enemies using their actual rendered shape instead of a loose circle, which mattered for hit feel.
+- Collision response includes velocity projection along contact normals, tangent friction for walls, and equal-mass impulse exchange between locomotive entities.
 
-### Project Structure
+**Save/Load System** (`src/systems/SaveLoadSystem.hpp`, `src/utils/RegistrySerializer.hpp`, `src/utils/ComponentSerializer.hpp`, `src/utils/MapManagerSerializer.hpp`)
+
+Designed and implemented end-to-end persistence for the entire game state.
+
+- Serializes 30+ ECS component types to human-readable JSON (motions, locomotion stats, weapons, AI state including boss Q-learning tables, attack buildups, level-up orbs, collision bounds, light sources, interactables, and more).
+- Two-pass deserialization to correctly remap entity IDs across the save boundary. First pass creates new entities and deserializes components without entity references; second pass resolves cross-references (e.g., `Attacker.weapon`, `Interactable.entity`, inventory contents, locked targets) using an old-ID-to-new-Entity map. Without this, any component holding an `Entity` would silently point at the wrong object after load.
+- Persists the full `MapManager` state, including all four registries (open world, dungeon, spire, last checkpoint) and a marker for which one is active, so loading restores the player to the exact map they saved in.
+- Integrated auto-save at bonfire interactions and manual save/load via F5/F6.
+
+## Controls
+
+| Action | Key |
+|--------|-----|
+| Move | WASD |
+| Camera | Mouse |
+| Dodge roll | Space |
+| Attack | Left Mouse |
+| Lock-on | Right Mouse |
+| Heal (Estus) | 1 |
+| Interact | F |
+| Toggle stats | H |
+| Pause | ESC |
+| Quick save / load | F5 / F6 |
+
+## Project Structure
 
 ```
 src/
-├── app/                 # Core application logic
-├── components/         # Game components (Combat, AI, Physics)
-├── ecs/               # Entity Component System
-├── globals/           # Global variables and constants
-├── renderer/          # Graphics and rendering
-├── systems/           # Game systems (AI, Combat, Physics)
-├── utils/            # Utility functions
-└── main.cpp          # Entry point
+├── app/             # Core application loop, World, MapManager, EntityFactory
+├── components/      # ECS components (Combat, AI, Physics, Render, Gameplay)
+├── ecs/             # Entity Component System core
+├── renderer/        # OpenGL rendering pipeline
+├── systems/         # Game systems (AI, Combat, Physics, Collision, SaveLoad, Audio)
+├── shaders/         # GLSL shaders (Blinn-Phong, skybox, HUD)
+├── utils/           # Serialization, transforms, pathfinding, file IO
+├── globals/         # Constants and shared state
+└── main.cpp         # Entry point
 ```
 
-## Milestone 4 Implementation Details
+## Building
 
-### Mandatory Requirements (70%)
+Built with CMake. Dependencies: OpenGL, GLFW, SDL2, SDL2_mixer, GLM, Assimp, FreeType, stb_image, nlohmann/json.
 
-#### Playability (15%) ✓
-- 10+ minutes of non-repetitive gameplay
-- Three unique dungeon themes
-- Multiple boss encounters
-- Progressive difficulty scaling
+## Team
 
-#### Stability (15%) ✓
-- Cross-platform compatibility
-- Consistent performance
-- Memory optimization
-- Robust error handling
-
-#### User Experience (10%) ✓
-- Self-explanatory tutorial system
-- Intuitive UI/HUD elements
-- Responsive controls
-- Clear visual feedback
-
-#### Robustness (15%) ✓
-- Efficient memory management
-- Stable frame rate
-- Graceful error handling
-- Robust input system
-
-#### Reporting (15%) ✓
-- Comprehensive bug tracking
-- Detailed test plan
-- Video demonstration
-- User feedback implementation
-
-### Creative Components (30%)
-
-#### Reloadability (10%) ✓
-- Complete game state serialization
-- JSON-based save file system
-- Multiple save slots support
-- Automatic saving at rest points
-- Full entity/component preservation
-- Test path: `src/systems/SaveLoadSystem.hpp`
-
-#### Advanced Decision Making (10%) ✓
-- Complex boss AI with multiple attack patterns
-- Goal-based enemy behavior
-- Dynamic difficulty scaling
-- Advanced pathfinding for enemies
-- Coordinated enemy positioning
-- Test path: `src/systems/AISystem.hpp`
-
-#### Audio System (10%) ✓
-- Context-sensitive combat sounds
-- Environmental audio feedback
-- Distance-based audio scaling
-- Theme-specific background music
-- Interactive sound effects
-- Test path: `src/systems/AudioSystem.hpp`
-
-### Implementation Details
-
-1. **Save/Load System**
-   - Human-readable JSON save files
-   - Complete entity serialization
-   - Component state preservation
-   - Registry management
-   - Checkpoint system at bonfires
-
-2. **AI Decision Making**
-   - Boss combat patterns
-   - Enemy coordination
-   - Advanced pathfinding
-   - Dynamic difficulty adjustment
-   - Contextual behavior selection
-
-3. **Audio Implementation**
-   - Combat feedback system
-   - Environmental ambience
-   - Musical theme transitions
-   - Distance-based audio
-   - Interactive sound effects
-
-### Additional Features
-
-#### Combat Enhancements
-- Attack buildup system
-- Damage scaling
-- Dodge cancellation
-- Estus cooldown system
-
-#### World Design
-- Themed dungeons
-- Open world hub area
-- Environmental objects
-- Dynamic lighting
-
-#### Technical Improvements
-- Enhanced save system
-- Menu system
-- Performance optimization
-- Memory management
-
-## Acknowledgments
-
-- OpenGL and GLFW communities
-- SDL2 developers
-- GLM developers
-- Our dedicated team members and supportive instructors
-
----
-
-<p align="center">
-    <strong>Embark on an Epic Journey Through the Twisted Lands of Eldoria!</strong>
-</p>
+Built by Team 23 (Los Pollos Hermanos Gaming) for CPSC 427 at UBC.
