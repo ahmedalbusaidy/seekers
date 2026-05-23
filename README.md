@@ -1,10 +1,10 @@
 # Seekers
 
-![Seekers Splash Screen](doc/Splashscreen.jpg)
-
 ## Demo
 
 [![Watch the Demo](https://img.youtube.com/vi/hXh101_gjjw/maxresdefault.jpg)](https://www.youtube.com/watch?v=hXh101_gjjw)
+
+*Click the image above to watch the demo on YouTube*
 
 ## Team 23: Los Pollos Hermanos Gaming
 
