@@ -2,6 +2,10 @@
 
 ![Seekers Splash Screen](doc/Splashscreen.jpg)
 
+## Demo
+
+[![Watch the Demo](https://img.youtube.com/vi/hXh101_gjjw/maxresdefault.jpg)](https://www.youtube.com/watch?v=hXh101_gjjw)
+
 ## Team 23: Los Pollos Hermanos Gaming
 
 Seekers is a third person 3D action RPG that melds dungeon crawling with open-world exploration. Set in the dark fantasy world of Eldoria, players take on the role of a Seeker, striving to uncover ancient secrets and restore balance to a land shrouded in darkness.
